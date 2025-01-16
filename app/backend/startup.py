@@ -21,6 +21,8 @@ scheduler.start()
 @app.post("/files/")
 async def upload_file(file: UploadFile = File(...)):
     """Upload a file to the data directory."""
+    if not DATA_DIR.exists():
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
     save_path = DATA_DIR / file.filename
     with open(save_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
