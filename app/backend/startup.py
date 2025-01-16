@@ -6,7 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 app = FastAPI()
 
-DATA_DIR = Path("./data")
+DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 
 def delete_files():
     """Delete all files in the data directory."""
