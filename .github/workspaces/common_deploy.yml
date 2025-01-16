@@ -1,0 +1,54 @@
+name: Deploy app to Azure Container Apps
+
+on:
+  workflow_call:
+    inputs:
+      WORKING_DIRECTORY:
+        required: true
+        type: string
+      ACR:
+        required: true
+        type: string
+      IMAGE_NAME:
+        required: true
+        type: string
+      TAG:
+        required: true
+        type: string
+      CONTAINER_APP_NAME:
+        required: true
+        type: string
+      RESOURCE_GROUP:
+        required: true
+        type: string
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
+
+env:
+  PORT: 8000
+  INGRESS: external
+  FULL_IMAGE_NAME: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME }}:${{ inputs.TAG }}
+
+jobs:
+  deploy-app:
+    name: Deploy App to Azure Container Apps
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout GitHub repository
+      uses: actions/checkout@v3
+    
+    - name: Log in to Azure
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Deploy image To Azure Container Apps
+      uses: azure/container-apps-deploy-action@v1
+      with:
+        containerAppName: ${{ inputs.CONTAINER_APP_NAME }}
+        resourceGroup: ${{ inputs.RESOURCE_GROUP }}
+        imageToDeploy: ${{ env.FULL_IMAGE_NAME }}
+        targetPort: ${{ env.PORT }}
+        ingress: ${{ env.INGRESS }}

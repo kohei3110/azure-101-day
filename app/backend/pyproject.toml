@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "azure101sample"
+version = "0.1.0"
+description = ""
+authors = ["kohei3110 <kk.31108424@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.6"
+apscheduler = "^3.11.0"
+uvicorn = "^0.34.0"
+python-multipart = "^0.0.20"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
