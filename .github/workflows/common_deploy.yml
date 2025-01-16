@@ -44,6 +44,10 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: Create directories for template.yml
+      run: |
+        mkdir -p app/backend/config/containerapps
+
     - name: Generate template.yml with dynamic GIT_SHA
       run: |
         cat <<EOF > app/backend/config/containerapps/template.yml
@@ -52,7 +56,7 @@ jobs:
           - name: emptydata
             storageType: EmptyDir
           containers:
-          - image: crazure101daydemoce001.azurecr.io/sample:${{ github.sha }}
+          - image: ${{ env.FULL_IMAGE_NAME }}
             name: sample
             volumeMounts:
             - mountPath: "/data"
