@@ -12,8 +12,8 @@ jobs:
       IMAGE_NAME: sample
       TAG: ${{ github.sha }}
     secrets:
-      ACR_USERNAME: ${{ secrets.ACR_USERNAME_DEV }}
-      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD_DEV }}
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
   
   deploy-workflow:
     needs: build-workflow
