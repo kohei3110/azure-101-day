@@ -29,6 +29,7 @@ env:
   PORT: 8000
   INGRESS: external
   FULL_IMAGE_NAME: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME }}:${{ inputs.TAG }}
+  GIT_SHA: ${{ github.sha }}
 
 jobs:
   deploy-app:
@@ -53,3 +54,4 @@ jobs:
         targetPort: ${{ env.PORT }}
         ingress: ${{ env.INGRESS }}
         environmentVariables: "DATA_DIR=/data"
+        yamlConfigPath: ${{ inputs.WORKING_DIRECTORY }}/config/containerapps/template.yml
