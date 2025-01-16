@@ -57,7 +57,7 @@ jobs:
             storageType: EmptyDir
           containers:
           - image: ${{ env.FULL_IMAGE_NAME }}
-            name: sample
+            name: ca-azure101day-demo-ce-001
             volumeMounts:
             - mountPath: "/data"
               volumeName: emptydata
