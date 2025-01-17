@@ -61,6 +61,8 @@ jobs:
             volumeMounts:
             - mountPath: "/data"
               volumeName: emptydata
+            - mountPath: "/files"
+              volumeName: files
             resources:
               cpu: 0.5
               memory: 1Gi
