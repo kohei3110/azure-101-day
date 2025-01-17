@@ -55,6 +55,8 @@ jobs:
           volumes:
           - name: emptydata
             storageType: EmptyDir
+          - name: files
+            storageType: AzureFile
           containers:
           - image: ${{ env.FULL_IMAGE_NAME }}
             name: ca-azure101day-demo-ce-001
