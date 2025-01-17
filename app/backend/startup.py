@@ -12,6 +12,7 @@ def delete_files():
     """Delete all files in the data directory."""
     for file in DATA_DIR.iterdir():
         if file.is_file():
+            print(f"Deleting {file}")
             os.remove(file)
 
 scheduler = BackgroundScheduler()
