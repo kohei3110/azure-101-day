@@ -21,6 +21,9 @@ on:
       RESOURCE_GROUP:
         required: true
         type: string
+      STORAGE_NAME:
+        required: true
+        type: string
     secrets:
       AZURE_CREDENTIALS:
         required: true
@@ -57,6 +60,7 @@ jobs:
             storageType: EmptyDir
           - name: files
             storageType: AzureFile
+            storageName: ${{ inputs.STORAGE_NAME }}
           containers:
           - image: ${{ env.FULL_IMAGE_NAME }}
             name: ca-azure101day-demo-ce-001
