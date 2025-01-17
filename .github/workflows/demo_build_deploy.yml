@@ -25,6 +25,6 @@ jobs:
       TAG: ${{ github.sha }}
       CONTAINER_APP_NAME: ca-azure101day-demo-ce-001
       RESOURCE_GROUP: rg-azure101day-demo-canadaeast-001
-      STORAGE_NAME: stazure101daydemoce001
+      STORAGE_NAME: files
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CRED }}
