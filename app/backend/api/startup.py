@@ -4,15 +4,28 @@ from pathlib import Path
 from fastapi import FastAPI, File, UploadFile
 from apscheduler.schedulers.background import BackgroundScheduler
 
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+
 from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (
     BatchSpanProcessor,
     ConsoleSpanExporter,
 )
 
-provider = TracerProvider()
-processor = BatchSpanProcessor(ConsoleSpanExporter())
+resource = Resource(attributes={
+    SERVICE_NAME: "sample-service"
+})
+provider = TracerProvider(
+    resource=resource
+)
+processor = BatchSpanProcessor(
+    OTLPSpanExporter(
+        endpoint="http://otel-collector:4317",
+        insecure=True,
+    )
+)
 provider.add_span_processor(processor)
 
 # Sets the global default tracer provider
