@@ -1,4 +1,5 @@
 import os
+import logging
 import shutil
 from pathlib import Path
 from fastapi import FastAPI, File, UploadFile
@@ -12,6 +13,10 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (
     BatchSpanProcessor,
     ConsoleSpanExporter,
+)
+
+logging.basicConfig(
+    level=logging.DEBUG
 )
 
 resource = Resource(attributes={
