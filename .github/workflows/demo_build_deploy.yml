@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-containerapps-workflow:
-    uses: ./.github/workflows/common_containerapps_build.yml
+    uses: ./.github/workflows/common_container_image_build.yml
     with:
       WORKING_DIRECTORY: app/backend
       ACR: crazure101daydemoce001.azurecr.io
