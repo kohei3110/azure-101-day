@@ -9,9 +9,11 @@ from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
 
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry import trace, metrics
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (
     BatchSpanProcessor,
+    ConsoleSpanExporter,
 )
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
@@ -28,7 +30,7 @@ traceProvider = TracerProvider(
     resource=resource
 )
 processor = BatchSpanProcessor(
-    AzureMonitorTraceExporter(
+    OTLPSpanExporter(
         endpoint="http://localhost:4318/v1/traces",
     )
 )
