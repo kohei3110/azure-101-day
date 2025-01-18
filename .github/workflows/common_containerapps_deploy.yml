@@ -93,7 +93,7 @@ jobs:
                   concurrentRequests: '50'
         EOF
     
-    - name: Deploy API image To Azure Container Apps
+    - name: Deploy API image To Azure Container Apps with OTEL Collector
       uses: azure/container-apps-deploy-action@v1
       with:
         containerAppName: ${{ inputs.CONTAINER_APP_NAME }}
@@ -103,3 +103,7 @@ jobs:
         ingress: ${{ env.INGRESS }}
         environmentVariables: "DATA_DIR=/data FILES_DIR=/files OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317"
         yamlConfigPath: ${{ inputs.WORKING_DIRECTORY }}/config/containerapps/template.yml
+
+    - name: Update environment variables for Azure Container Apps
+      run: |
+        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --set-env-vars OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
