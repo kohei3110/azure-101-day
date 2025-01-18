@@ -53,11 +53,11 @@ jobs:
 
     - name: Create directories for template.yml
       run: |
-        mkdir -p app/backend/config/containerapps
+        mkdir -p ${{ inputs.WORKING_DIRECTORY }}/config/containerapps
 
     - name: Generate template.yml with dynamic GIT_SHA
       run: |
-        cat <<EOF > app/backend/config/containerapps/template.yml
+        cat <<EOF > ${{ inputs.WORKING_DIRECTORY }}/config/containerapps/template.yml
         template:
           volumes:
           - name: emptydata
