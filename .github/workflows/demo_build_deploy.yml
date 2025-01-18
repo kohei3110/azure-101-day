@@ -4,8 +4,8 @@ on:
   push:
 
 jobs:
-  build-workflow:
-    uses: ./.github/workflows/common_build.yml
+  build-containerapps-workflow:
+    uses: ./.github/workflows/common_containerapps_build.yml
     with:
       WORKING_DIRECTORY: app/backend
       ACR: crazure101daydemoce001.azurecr.io
@@ -15,9 +15,9 @@ jobs:
       ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
       ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
   
-  deploy-workflow:
-    needs: build-workflow
-    uses: ./.github/workflows/common_deploy.yml
+  deploy-containerapps-workflow:
+    needs: build-containerapps-workflow
+    uses: ./.github/workflows/common_containerapps_deploy.yml
     with:
       WORKING_DIRECTORY: app/backend
       ACR: crazure101daydemoce001.azurecr.io
@@ -26,5 +26,17 @@ jobs:
       CONTAINER_APP_NAME: ca-azure101day-demo-ce-001
       RESOURCE_GROUP: rg-azure101day-demo-canadaeast-001
       STORAGE_NAME: files
+    secrets:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CRED }}
+
+  deploy-webappforcontainers-workflow:
+    needs: build-containerapps-workflow
+    uses: ./.github/workflows/common_webappforcontainers_deploy.yml
+    with:
+      AZURE_WEBAPP_NAME: app-azure101day-demo-ce-002
+      WORKING_DIRECTORY: app/backend
+      ACR: crazure101daydemoce001.azurecr.io
+      IMAGE_NAME: sample
+      TAG: ${{ github.sha }}
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CRED }}

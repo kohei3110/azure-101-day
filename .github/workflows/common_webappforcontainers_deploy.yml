@@ -1,0 +1,43 @@
+name: Deploy Python package to Azure Web App for Containers.
+on:
+  workflow_call:
+    inputs:
+      AZURE_WEBAPP_NAME:
+        required: true
+        type: string
+      WORKING_DIRECTORY:
+        required: true
+        type: string
+      ACR:
+        required: true
+        type: string
+      IMAGE_NAME:
+        required: true
+        type: string
+      TAG:
+        required: true
+        type: string
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
+
+env:
+  FULL_IMAGE_NAME: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME }}:${{ inputs.TAG }}
+
+jobs:
+ deploy:
+  runs-on: ubuntu-latest
+  steps:
+  - uses: actions/checkout@v4
+
+  - name: Sign in to Azure 
+    uses: azure/login@v2
+    with:
+      creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+  - name: Deploy to Azure Web App
+    uses: azure/webapps-deploy@v2
+    with:
+      app-name: ${{ inputs.AZURE_WEBAPP_NAME }}
+      slot-name: 'production'
+      images: ${{ env.FULL_IMAGE_NAME }}
