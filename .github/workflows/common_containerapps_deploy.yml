@@ -36,6 +36,7 @@ env:
   INGRESS: external
   FULL_IMAGE_NAME_API: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_API }}:${{ inputs.TAG }}
   FULL_IMAGE_NAME_OTELCOLLECTOR: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_OTELCOLLECTOR }}:${{ inputs.TAG }}
+  CONTAINER_NAME_API: ca-azure101day-demo-ce-001
 
 jobs:
   deploy-app:
@@ -67,7 +68,7 @@ jobs:
             storageName: ${{ inputs.STORAGE_NAME }}
           containers:
           - image: ${{ env.FULL_IMAGE_NAME_API }}
-            name: ca-azure101day-demo-ce-001
+            name: ${{ env.CONTAINER_NAME_API }}
             volumeMounts:
             - mountPath: "/data"
               volumeName: emptydata
@@ -106,4 +107,4 @@ jobs:
 
     - name: Update environment variables for Azure Container Apps
       run: |
-        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --set-env-vars OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
