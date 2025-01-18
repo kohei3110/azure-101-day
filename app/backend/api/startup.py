@@ -28,10 +28,11 @@ FILE_DIR = Path(os.getenv("FILE_DIR", "/files"))
 
 def delete_files():
     """Delete all files in the data directory."""
-    for file in DATA_DIR.iterdir():
-        if file.is_file():
-            print(f"Deleting {file}")
-            os.remove(file)
+    with tracer.start_as_current_span("delete_files"):
+        for file in DATA_DIR.iterdir():
+            if file.is_file():
+                print(f"Deleting {file}")
+                os.remove(file)
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(delete_files, 'interval', seconds=30)
