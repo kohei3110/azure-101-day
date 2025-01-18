@@ -27,7 +27,7 @@ provider = TracerProvider(
 )
 processor = BatchSpanProcessor(
     OTLPSpanExporter(
-        endpoint="http://localhost:4318"
+        endpoint="http://localhost:4318/v1/traces",
     )
 )
 provider.add_span_processor(processor)
