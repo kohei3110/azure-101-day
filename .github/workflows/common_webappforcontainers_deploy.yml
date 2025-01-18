@@ -39,5 +39,4 @@ jobs:
     uses: azure/webapps-deploy@v2
     with:
       app-name: ${{ inputs.AZURE_WEBAPP_NAME }}
-      slot-name: 'production'
       images: ${{ env.FULL_IMAGE_NAME }}
