@@ -7,13 +7,16 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 
-from opentelemetry import trace
+from opentelemetry import trace, metrics
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (
     BatchSpanProcessor,
     ConsoleSpanExporter,
 )
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
 
 logging.basicConfig(
     level=logging.DEBUG
@@ -22,7 +25,7 @@ logging.basicConfig(
 resource = Resource(attributes={
     SERVICE_NAME: "sample-service"
 })
-provider = TracerProvider(
+traceProvider = TracerProvider(
     resource=resource
 )
 processor = BatchSpanProcessor(
@@ -30,10 +33,16 @@ processor = BatchSpanProcessor(
         endpoint="http://localhost:4318/v1/traces",
     )
 )
-provider.add_span_processor(processor)
+traceProvider.add_span_processor(processor)
 
 # Sets the global default tracer provider
-trace.set_tracer_provider(provider)
+trace.set_tracer_provider(traceProvider)
+
+reader = PeriodicExportingMetricReader(
+    OTLPMetricExporter(endpoint="http://localhost:4318/v1/metrics")
+)
+meterProvider = MeterProvider(resource=resource, metric_readers=[reader])
+metrics.set_meter_provider(meterProvider)
 
 # Creates a tracer from the global tracer provider
 tracer = trace.get_tracer("my.tracer.sample")
