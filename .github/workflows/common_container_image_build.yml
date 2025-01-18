@@ -3,13 +3,19 @@ name: Deploy app to Azure Container Apps
 on:
   workflow_call:
     inputs:
-      WORKING_DIRECTORY:
+      WORKING_DIRECTORY_API:
+        required: true
+        type: string
+      WORKING_DIRECTORY_OTELCOLLECTOR:
         required: true
         type: string
       ACR:
         required: true
         type: string
-      IMAGE_NAME:
+      IMAGE_NAME_API:
+        required: true
+        type: string
+      IMAGE_NAME_OTELCOLLECTOR:
         required: true
         type: string
       TAG:
@@ -20,9 +26,12 @@ on:
         required: true
       ACR_PASSWORD:
         required: true
+      APPLICATIONINSIGHTS_CONNECTION_STRING:
+        required: true
 
 env:
-  FULL_IMAGE_NAME: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME }}:${{ inputs.TAG }}
+  FULL_IMAGE_NAME_API: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_API }}:${{ inputs.TAG }}
+  FULL_IMAGE_NAME_OTELCOLLECTOR: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_OTELCOLLECTOR }}:${{ inputs.TAG }}
 
 jobs:
   build-app:
@@ -42,14 +51,64 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - id: build-image
+      - id: build-image-api
         name: Build docker image
         run: |
-          docker build . -t ${{ env.FULL_IMAGE_NAME }}
-        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+          docker build . -t ${{ env.FULL_IMAGE_NAME_API }}
+        working-directory: ${{ inputs.WORKING_DIRECTORY_API }}
 
-      - id: push-image
+      - id: push-image-api
         name: Push docker image to ACR
         run: |
-          docker push ${{ env.FULL_IMAGE_NAME }}
-        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+          docker push ${{ env.FULL_IMAGE_NAME_API }}
+        working-directory: ${{ inputs.WORKING_DIRECTORY_API }}
+
+      - id: generate-otelcollector-config
+        name: Generate otel-collector-config.yaml with Application Insights Connection String
+        run: |
+          cat <<EOF > app/backend/opentelemetry/otel-collector-config.yaml
+          receivers:
+            otlp:
+              protocols:
+                grpc:
+                http:
+          
+          processors:
+            batch:
+              send_batch_max_size: 100
+              send_batch_size: 10
+              timeout: 10s            
+          
+          exporters:
+            debug:
+              verbosity: detailed
+            azuremonitor:
+              connection_string: ${{secrets.APPLICATIONINSIGHTS_CONNECTION_STRING}}
+          
+          service:
+            pipelines:
+              traces:
+                receivers: [otlp]
+                exporters: [azuremonitor, debug]
+                processors: [batch]
+              metrics:
+                receivers: [otlp]
+                exporters: [azuremonitor, debug]
+                processors: [batch]
+              logs:
+                receivers: [otlp]
+                exporters: [azuremonitor, debug]
+                processors: [batch]
+          EOF
+
+      - id: build-image-otelcollector
+        name: Build docker image for otel-collector
+        run: |
+          docker build . -t ${{ env.FULL_IMAGE_NAME_OTELCOLLECTOR }}
+        working-directory: ${{ inputs.WORKING_DIRECTORY_OTELCOLLECTOR }}
+
+      - id: push-image-otelcollector
+        name: Push docker image for otel-collector to ACR
+        run: |
+          docker push ${{ env.FULL_IMAGE_NAME_OTELCOLLECTOR }}
+        working-directory: ${{ inputs.WORKING_DIRECTORY_OTELCOLLECTOR }}
