@@ -101,5 +101,5 @@ jobs:
         imageToDeploy: ${{ env.FULL_IMAGE_NAME_API }}
         targetPort: ${{ env.PORT }}
         ingress: ${{ env.INGRESS }}
-        environmentVariables: "DATA_DIR=/data, FILES_DIR=/files, OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317"
+        environmentVariables: "DATA_DIR=/data FILES_DIR=/files OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317"
         yamlConfigPath: ${{ inputs.WORKING_DIRECTORY }}/config/containerapps/template.yml
