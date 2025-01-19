@@ -32,6 +32,12 @@ on:
         required: true
       PROJECT_CONNECTION_STRING:
         required: true
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_CLIENT_SECRET:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
 
 env:
   PORT: 8000
@@ -109,4 +115,4 @@ jobs:
 
     - name: Update environment variables for Azure Container Apps
       run: |
-        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars PROJECT_CONNECTION_STRING="${{ secrets.PROJECT_CONNECTION_STRING }}"
+        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars "PROJECT_CONNECTION_STRING=${{ secrets.PROJECT_CONNECTION_STRING }}" "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
