@@ -11,7 +11,7 @@ class CodeInterpreterService:
         self.project_client = project_client
 
     async def process_code_interpreter(self, file, user_message: str, file_handler: FileHandler):
-        with tracer.start_as_current_span("post_code_interpreter"):
+        with tracer.start_as_current_span("process_code_interpreter"):
             destination: str = os.getenv("DATA_DIR", "/data")
             file_location = await file_handler.save_temp_file(file, destination)
             try:
@@ -27,7 +27,7 @@ class CodeInterpreterService:
                 print("Deleted file")
 
     def upload_file_to_project(self, file_location: str):
-        with tracer.start_as_current_span("post_code_interpreter"):
+        with tracer.start_as_current_span("upload_file_to_project"):
             uploaded_file = self.project_client.agents.upload_file_and_poll(
                 file_path=file_location, purpose=FilePurpose.AGENTS
             )
@@ -35,7 +35,7 @@ class CodeInterpreterService:
             return uploaded_file
 
     def create_agent_and_thread(self, file_id: str):
-        with tracer.start_as_current_span("post_code_interpreter"):
+        with tracer.start_as_current_span("create_agent_and_thread"):
             code_interpreter = create_code_interpreter_tool(file_ids=[file_id])
             agent = self.project_client.agents.create_agent(
                 model="gpt-4o-mini",
@@ -49,7 +49,7 @@ class CodeInterpreterService:
             return agent, thread
 
     def send_user_message_to_thread(self, thread_id: str, user_message: str):
-        with tracer.start_as_current_span("post_code_interpreter"):
+        with tracer.start_as_current_span("send_user_message_to_thread"):
             message = self.project_client.agents.create_message(
                 thread_id=thread_id,
                 role="user",
@@ -58,20 +58,20 @@ class CodeInterpreterService:
             print(f"Created message, message ID: {message.id}")
 
     def create_and_execute_run(self, thread_id: str, agent_id: str):
-        with tracer.start_as_current_span("post_code_interpreter"):
+        with tracer.start_as_current_span("create_and_execute_run"):
             run = self.project_client.agents.create_and_process_run(thread_id=thread_id, assistant_id=agent_id)
             print(f"Run finished with status: {run.status}")
             return run
 
     def handle_run_completion(self, run, thread_id: str, file_id: str):
-        with tracer.start_as_current_span("post_code_interpreter"):
+        with tracer.start_as_current_span("handle_run_completion"):
             if run.status == "failed":
                 print(f"Run failed: {run.last_error}")
             self.project_client.agents.delete_file(file_id)
             print(f"Deleted file, file ID: {file_id}")
 
     def save_generated_images(self, thread_id: str):
-        with tracer.start_as_current_span("post_code_interpreter"):
+        with tracer.start_as_current_span("save_generated_images"):
             messages = self.project_client.agents.list_messages(thread_id=thread_id)
             print(f"Messages: {messages}")
 

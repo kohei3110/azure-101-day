@@ -45,7 +45,9 @@ async def post_code_interpreter(
     file_handler: FileHandler = Depends(get_file_handler),
     code_interpreter_service: CodeInterpreterService = Depends(lambda: code_interpreter_service)
 ):
-    with tracer.start_as_current_span("post_code_interpreter"):
+    with tracer.start_as_current_span("post_code_interpreter") as parent:
+        parent.add_event("post_code_interpreter")
+        parent.set_attribute("file_name", file.filename)
         user_message = message
         file_name = await code_interpreter_service.process_code_interpreter(file, user_message, file_handler)
         return FileResponse(path=file_name, filename=file_name)
