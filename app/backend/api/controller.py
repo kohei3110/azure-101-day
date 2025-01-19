@@ -49,7 +49,10 @@ async def post_code_interpreter(
     with tracer.start_as_current_span("post_code_interpreter") as parent:
         parent.add_event(
             name="gen_ai.user.message",
-            attributes={"content": message}
+            attributes={
+                "gen_ai.system": "openai",
+                "content": message
+            }
         )
         parent.set_attributes(
             {
