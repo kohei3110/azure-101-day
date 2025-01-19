@@ -67,7 +67,7 @@ class CodeInterpreterService:
         messages = self.project_client.agents.list_messages(thread_id=thread_id)
         print(f"Messages: {messages}")
 
-        last_msg = messages.get_last_text_message_by_sender("assistant")
+        last_msg = messages.get_last_text_message_by_role("assistant")
         if last_msg:
             print(f"Last Message: {last_msg.text.value}")
 
