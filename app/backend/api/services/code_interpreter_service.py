@@ -12,7 +12,12 @@ class CodeInterpreterService:
         self.project_client = project_client
 
     async def process_code_interpreter(self, file, user_message: str, file_handler: FileHandler):
-        with tracer.start_as_current_span("process_code_interpreter"):
+        with tracer.start_as_current_span("process_code_interpreter") as span:
+            span.set_attributes(
+                {
+                    "span_type": "HTTP"
+                }
+            )
             destination: str = os.getenv("DATA_DIR", "/data")
             file_location = await file_handler.save_temp_file(file, destination)
             try:
