@@ -84,6 +84,7 @@ jobs:
               verbosity: detailed
             azuremonitor:
               connection_string: ${{secrets.APPLICATIONINSIGHTS_CONNECTION_STRING}}
+              spaneventsenabled: true
           
           service:
             pipelines:
