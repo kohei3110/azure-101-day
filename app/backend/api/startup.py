@@ -17,6 +17,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (
     BatchSpanProcessor,
     ConsoleSpanExporter,
+    SimpleSpanProcessor,
 )
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
@@ -40,6 +41,9 @@ processor = BatchSpanProcessor(
     )
 )
 traceProvider.add_span_processor(processor)
+
+span_exporter = ConsoleSpanExporter()
+traceProvider.add_span_processor(SimpleSpanProcessor(span_exporter))
 
 # Sets the global default tracer provider
 trace.set_tracer_provider(traceProvider)
