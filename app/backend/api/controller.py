@@ -47,8 +47,7 @@ async def post_code_interpreter(
     code_interpreter_service: CodeInterpreterService = Depends(lambda: code_interpreter_service)
 ):
     with tracer.start_as_current_span("post_code_interpreter") as parent:
-        parent.add_event("gen_ai.user.message")
-        parent.set_attribute("gen_ai.event.content", {"role": "user", "content": message})
+        parent.set_attribute("gen_ai.user.message", message)
         user_message = message
         file_name = await code_interpreter_service.process_code_interpreter(file, user_message, file_handler)
         return FileResponse(path=file_name, filename=file_name)
