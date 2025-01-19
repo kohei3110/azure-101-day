@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import FileResponse
