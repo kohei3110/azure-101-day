@@ -109,4 +109,4 @@ jobs:
 
     - name: Update environment variables for Azure Container Apps
       run: |
-        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars PROJECT_CONNECTION_STRING=${{ secrets.PROJECT_CONNECTION_STRING }}
+        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars PROJECT_CONNECTION_STRING="${{ secrets.PROJECT_CONNECTION_STRING }}"
