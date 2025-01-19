@@ -30,6 +30,8 @@ on:
     secrets:
       AZURE_CREDENTIALS:
         required: true
+      PROJECT_CONNECTION_STRING:
+        required: true
 
 env:
   PORT: 8000
@@ -107,4 +109,4 @@ jobs:
 
     - name: Update environment variables for Azure Container Apps
       run: |
-        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars PROJECT_CONNECTION_STRING=${{ secrets.PROJECT_CONNECTION_STRING }}

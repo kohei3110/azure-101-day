@@ -32,7 +32,8 @@ jobs:
       STORAGE_NAME: files
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CRED }}
-
+      PROJECT_CONNECTION_STRING: ${{ secrets.PROJECT_CONNECTION_STRING }}
+      
   deploy-webappforcontainers-workflow:
     needs: build-containerapps-workflow
     uses: ./.github/workflows/common_webappforcontainers_deploy.yml

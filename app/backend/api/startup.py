@@ -5,6 +5,9 @@ from pathlib import Path
 from fastapi import FastAPI, File, UploadFile
 from apscheduler.schedulers.background import BackgroundScheduler
 
+from azure.ai.projects import AIProjectClient
+from azure.identity import DefaultAzureCredential
+
 from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
 
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
@@ -18,6 +21,8 @@ from opentelemetry.sdk.trace.export import (
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+
+from services.code_interpreter_service import CodeInterpreterService
 
 logging.basicConfig(
     level=logging.DEBUG
@@ -86,3 +91,12 @@ async def upload_files(file: UploadFile = File(...)):
         with open(save_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         return {"filename": file.filename}
+
+project_client: AIProjectClient = AIProjectClient.from_connection_string(
+    credential=DefaultAzureCredential(), conn_str=os.environ["PROJECT_CONNECTION_STRING"]
+)
+
+code_interpreter_service = CodeInterpreterService(project_client)
+
+import controller
+app.include_router(controller.router)
