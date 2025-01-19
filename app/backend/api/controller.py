@@ -57,7 +57,6 @@ async def post_code_interpreter(
                 "inputs": {
                     "messages": [
                         {
-                            "role": "user",
                             "content": message
                         }
                     ]
