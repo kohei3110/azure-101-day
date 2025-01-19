@@ -11,7 +11,7 @@ from azure.identity import DefaultAzureCredential
 from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
 
 from services.code_interpreter_service import CodeInterpreterService
-from .tracing import tracer
+from tracing.tracing import tracer
 
 logging.basicConfig(
     level=logging.DEBUG

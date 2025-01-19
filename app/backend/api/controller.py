@@ -6,7 +6,8 @@ from fastapi.responses import FileResponse
 
 from services.code_interpreter_service import CodeInterpreterService
 from utils.file_handler import FileHandler
-from startup import code_interpreter_service, tracer
+from startup import code_interpreter_service
+from tracing.tracing import tracer
 
 router = APIRouter()
 
