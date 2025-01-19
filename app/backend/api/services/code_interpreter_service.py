@@ -1,3 +1,4 @@
+import logging
 import os
 from azure.ai.projects.models import FilePurpose
 from tools.action.code_interpreter_tool import create_code_interpreter_tool
@@ -31,7 +32,7 @@ class CodeInterpreterService:
             uploaded_file = self.project_client.agents.upload_file_and_poll(
                 file_path=file_location, purpose=FilePurpose.AGENTS
             )
-            print(f"Uploaded file, file ID: {uploaded_file.id}")
+            logging.info(f"Uploaded file, file ID: {uploaded_file.id}")
             return uploaded_file
 
     def create_agent_and_thread(self, file_id: str):
@@ -45,7 +46,7 @@ class CodeInterpreterService:
                 tool_resources=code_interpreter.resources,
             )
             thread = self.project_client.agents.create_thread()
-            print(f"Created thread, thread ID: {thread.id}")
+            logging.info(f"Created thread, thread ID: {thread.id}")
             return agent, thread
 
     def send_user_message_to_thread(self, thread_id: str, user_message: str):
@@ -55,34 +56,34 @@ class CodeInterpreterService:
                 role="user",
                 content=user_message
             )
-            print(f"Created message, message ID: {message.id}")
+            logging.info(f"Created message, message ID: {message.id}")
 
     def create_and_execute_run(self, thread_id: str, agent_id: str):
         with tracer.start_as_current_span("create_and_execute_run"):
             run = self.project_client.agents.create_and_process_run(thread_id=thread_id, assistant_id=agent_id)
-            print(f"Run finished with status: {run.status}")
+            logging.info(f"Run finished with status: {run.status}")
             return run
 
     def handle_run_completion(self, run, thread_id: str, file_id: str):
         with tracer.start_as_current_span("handle_run_completion"):
             if run.status == "failed":
-                print(f"Run failed: {run.last_error}")
+                logging.error(f"Run failed: {run.last_error}")
             self.project_client.agents.delete_file(file_id)
-            print(f"Deleted file, file ID: {file_id}")
+            logging.info(f"Deleted file, file ID: {file_id}")
 
     def save_generated_images(self, thread_id: str):
         with tracer.start_as_current_span("save_generated_images"):
             messages = self.project_client.agents.list_messages(thread_id=thread_id)
-            print(f"Messages: {messages}")
+            logging.info(f"Messages: {messages}")
 
             last_msg = messages.get_last_text_message_by_role("assistant")
             if last_msg:
-                print(f"Last Message: {last_msg.text.value}")
+                logging.info(f"Last Message: {last_msg.text.value}")
 
             for image_content in messages.image_contents:
-                print(f"Image File ID: {image_content.image_file.file_id}")
+                logging.info(f"Image File ID: {image_content.image_file.file_id}")
                 file_name = f"{image_content.image_file.file_id}_image_file.png"
                 self.project_client.agents.save_file(file_id=image_content.image_file.file_id, file_name=file_name)
-                print(f"Saved image file to: {Path.cwd() / file_name}")
+                logging.info(f"Saved image file to: {Path.cwd() / file_name}")
 
             return file_name
