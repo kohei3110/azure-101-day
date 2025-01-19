@@ -62,6 +62,7 @@ async def post_code_interpreter(
                         }
                     ]
                 },
+                "gen_ai.operation.name": "chat",
                 "gen_ai.system": "az.ai.inference",
                 "gen_ai.request.model": "gpt-4o"
             }
