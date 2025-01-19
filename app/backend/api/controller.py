@@ -49,7 +49,7 @@ async def post_code_interpreter(
     with tracer.start_as_current_span("post_code_interpreter") as parent:
         parent.add_event(
             name="gen_ai.user.message",
-            attributes={"gen_ai.user.message": message}
+            attributes={"content": message}
         )
         user_message = message
         file_name = await code_interpreter_service.process_code_interpreter(file, user_message, file_handler)
