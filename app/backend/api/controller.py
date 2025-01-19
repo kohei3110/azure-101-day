@@ -51,6 +51,21 @@ async def post_code_interpreter(
             name="gen_ai.user.message",
             attributes={"content": message}
         )
+        parent.set_attributes(
+            {
+                "span_type": "GenAI",
+                "inputs": {
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": message
+                        }
+                    ]
+                },
+                "gen_ai.system": "az.ai.inference",
+                "gen_ai.request.model": "gpt-4o"
+            }
+        )
         user_message = message
         file_name = await code_interpreter_service.process_code_interpreter(file, user_message, file_handler)
         return FileResponse(path=file_name, filename=file_name)
