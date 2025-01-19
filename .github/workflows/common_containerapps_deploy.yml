@@ -106,3 +106,7 @@ jobs:
         ingress: ${{ env.INGRESS }}
         environmentVariables: "PROJECT_CONNECTION_STRING=${{ secrets.PROJECT_CONNECTION_STRING }}"
         yamlConfigPath: ${{ inputs.WORKING_DIRECTORY }}/config/containerapps/template.yml
+
+    - name: Update environment variables for Azure Container Apps
+      run: |
+        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars PROJECT_CONNECTION_STRING="${{ secrets.PROJECT_CONNECTION_STRING }}"
