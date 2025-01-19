@@ -3,7 +3,7 @@ from azure.ai.projects.models import FilePurpose
 from tools.action.code_interpreter_tool import create_code_interpreter_tool
 from utils.file_handler import FileHandler
 from pathlib import Path
-from startup import tracer
+from ..tracing import tracer
 
 
 class CodeInterpreterService:
