@@ -87,18 +87,18 @@ jobs:
             - mountPath: "/files"
               volumeName: files
             resources:
-              cpu: 0.5
-              memory: 0.5Gi
+              cpu: 1
+              memory: 1Gi
           - image: ${{ env.FULL_IMAGE_NAME_OTELCOLLECTOR }}
             name: otel-collector
             resources:
-              cpu: 0.5
-              memory: 0.5Gi
+              cpu: 1
+              memory: 1Gi
           - image: ${{ env.FULL_IMAGE_NAME_SLM }}
             name: slm
             resources:
-              cpu: 3
-              memory: 7Gi
+              cpu: 2
+              memory: 6Gi
           initContainers: null
           scale:
             maxReplicas: 2
