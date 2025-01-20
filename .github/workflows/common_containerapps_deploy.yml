@@ -97,7 +97,7 @@ jobs:
           - image: ${{ env.FULL_IMAGE_NAME_SLM }}
             name: slm
             resources:
-              cpu: 2
+              cpu: 3
               memory: 6Gi
           initContainers: null
           scale:
