@@ -88,12 +88,12 @@ jobs:
               volumeName: files
             resources:
               cpu: 0.5
-              memory: 1Gi
+              memory: 0.5Gi
           - image: ${{ env.FULL_IMAGE_NAME_OTELCOLLECTOR }}
             name: otel-collector
             resources:
               cpu: 0.5
-              memory: 1Gi
+              memory: 0.5Gi
           - image: ${{ env.FULL_IMAGE_NAME_SLM }}
             name: slm
             resources:
