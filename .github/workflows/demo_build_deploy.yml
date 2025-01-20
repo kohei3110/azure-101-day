@@ -45,6 +45,7 @@ jobs:
       WORKING_DIRECTORY: app/backend/api
       ACR: crazure101daydemoce001.azurecr.io
       IMAGE_NAME_API: sample
+      IMAGE_NAME_OTELCOLLECTOR: otel-collector
       TAG: ${{ github.sha }}
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CRED }}

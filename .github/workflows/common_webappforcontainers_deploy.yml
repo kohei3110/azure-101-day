@@ -14,6 +14,9 @@ on:
       IMAGE_NAME_API:
         required: true
         type: string
+      IMAGE_NAME_OTELCOLLECTOR:
+        required: true
+        type: string
       TAG:
         required: true
         type: string
@@ -23,6 +26,7 @@ on:
 
 env:
   FULL_IMAGE_NAME_API: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_API }}:${{ inputs.TAG }}
+  FULL_IMAGE_NAME_OTELCOLLECTOR: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_OTELCOLLECTOR }}:${{ inputs.TAG }}
 
 jobs:
  deploy:
@@ -40,3 +44,5 @@ jobs:
     with:
       app-name: ${{ inputs.AZURE_WEBAPP_NAME }}
       images: ${{ env.FULL_IMAGE_NAME_API }}
+
+  # FIXME: サイドカーコンテナの自動デプロイ
