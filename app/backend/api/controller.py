@@ -82,7 +82,7 @@ def post_slm(request_data: PromptRequest):
         response = requests.post(
             os.getenv("SIDECAR_SLM_URL", "http://localhost:11434/api/generate"),
             json={
-                "model": "phi4",
+                "model": "phi3",
                 "prompt": request_data.prompt,
                 "stream": False
             },
