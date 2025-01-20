@@ -1,4 +1,4 @@
-name: Deploy Python package to Azure Web App for Containers.
+name: Deploy app Azure Web App for Containers.
 on:
   workflow_call:
     inputs:

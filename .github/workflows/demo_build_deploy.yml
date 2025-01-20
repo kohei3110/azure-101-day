@@ -9,9 +9,11 @@ jobs:
     with:
       WORKING_DIRECTORY_API: app/backend/api
       WORKING_DIRECTORY_OTELCOLLECTOR: app/backend/opentelemetry
+      WORKING_DIRECTORY_SLM: app/backend/slm
       ACR: crazure101daydemoce001.azurecr.io
       IMAGE_NAME_API: sample
       IMAGE_NAME_OTELCOLLECTOR: otel-collector
+      IMAGE_NAME_SLM: slm
       TAG: ${{ github.sha }}
     secrets:
       ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
@@ -26,6 +28,7 @@ jobs:
       ACR: crazure101daydemoce001.azurecr.io
       IMAGE_NAME_API: sample
       IMAGE_NAME_OTELCOLLECTOR: otel-collector
+      IMAGE_NAME_SLM: slm
       TAG: ${{ github.sha }}
       CONTAINER_APP_NAME: ca-azure101day-demo-ce-001
       RESOURCE_GROUP: rg-azure101day-demo-canadaeast-001

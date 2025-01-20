@@ -1,9 +1,11 @@
 import os
+import requests
 import shutil
 from pathlib import Path
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import FileResponse
 
+from models.prompt_request import PromptRequest
 from services.code_interpreter_service import CodeInterpreterService
 from utils.file_handler import FileHandler
 from startup import code_interpreter_service
@@ -65,3 +67,25 @@ async def post_code_interpreter(
         user_message = message
         file_name = await code_interpreter_service.process_code_interpreter(file, user_message, file_handler)
         return FileResponse(path=file_name, filename=file_name)
+    
+@router.post("/slm")
+def post_slm(request_data: PromptRequest):
+    with tracer.start_as_current_span("post_slm") as parent:
+        parent.set_attributes(
+            {
+                "span_type": "GenAI",
+                "gen_ai.operation.name": "chat",
+                "gen_ai.system": "_OTHER",
+                "gen_ai.request.model": "phi4",
+            }
+        )
+        response = requests.post(
+            os.getenv("SIDECAR_SLM_URL", "http://localhost:11434/api/generate"),
+            json={
+                "model": "phi4",
+                "prompt": request_data.prompt,
+                "stream": False
+            },
+            headers={"Content-Type": "application/json"}
+        )
+        return response.json()

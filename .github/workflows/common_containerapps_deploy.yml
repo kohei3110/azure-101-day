@@ -27,6 +27,9 @@ on:
       STORAGE_NAME:
         required: true
         type: string
+      IMAGE_NAME_SLM:
+        required: true
+        type: string
     secrets:
       AZURE_CREDENTIALS:
         required: true
@@ -44,6 +47,7 @@ env:
   INGRESS: external
   FULL_IMAGE_NAME_API: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_API }}:${{ inputs.TAG }}
   FULL_IMAGE_NAME_OTELCOLLECTOR: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_OTELCOLLECTOR }}:${{ inputs.TAG }}
+  FULL_IMAGE_NAME_SLM: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_SLM }}:${{ inputs.TAG }}
   CONTAINER_NAME_API: ca-azure101day-demo-ce-001
 
 jobs:
@@ -90,6 +94,11 @@ jobs:
             resources:
               cpu: 0.5
               memory: 1Gi
+          - image: ${{ env.FULL_IMAGE_NAME_SLM }}
+            name: slm
+            resources:
+              cpu: 2
+              memory: 4Gi
           initContainers: null
           scale:
             maxReplicas: 2
@@ -115,4 +124,4 @@ jobs:
 
     - name: Update environment variables for Azure Container Apps
       run: |
-        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars "PROJECT_CONNECTION_STRING=${{ secrets.PROJECT_CONNECTION_STRING }}" "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
+        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars "PROJECT_CONNECTION_STRING=${{ secrets.PROJECT_CONNECTION_STRING }}" "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }} SIDECAR_SLM_URL=http://localhost:11434/api/generate"
