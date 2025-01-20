@@ -98,7 +98,7 @@ jobs:
             name: slm
             resources:
               cpu: 3
-              memory: 6Gi
+              memory: 7Gi
           initContainers: null
           scale:
             maxReplicas: 2
