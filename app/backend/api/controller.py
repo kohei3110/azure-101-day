@@ -47,13 +47,6 @@ async def post_code_interpreter(
     code_interpreter_service: CodeInterpreterService = Depends(lambda: code_interpreter_service)
 ):
     with tracer.start_as_current_span("post_code_interpreter") as parent:
-        parent.add_event(
-            name="gen_ai.user.message",
-            attributes={
-                "gen_ai.system": "openai",
-                "content": message
-            }
-        )
         parent.set_attributes(
             {
                 "span_type": "GenAI",
@@ -66,7 +59,8 @@ async def post_code_interpreter(
                 },
                 "gen_ai.operation.name": "chat",
                 "gen_ai.system": "az.ai.inference",
-                "gen_ai.request.model": "gpt-4o"
+                "gen_ai.request.model": "gpt-4o",
+
             }
         )
         user_message = message
