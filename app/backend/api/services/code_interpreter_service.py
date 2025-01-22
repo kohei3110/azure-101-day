@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Optional
 from azure.ai.projects.models import FilePurpose
 from tools.action.code_interpreter_tool import create_code_interpreter_tool
 from utils.file_handler import FileHandler
@@ -40,7 +41,7 @@ class CodeInterpreterService:
             logging.info(f"Uploaded file, file ID: {uploaded_file.id}")
             return uploaded_file
 
-    def create_agent_and_thread(self, file_id: str):
+    def create_agent_and_thread(self, file_id: Optional[str] = None):
         with tracer.start_as_current_span("create_agent_and_thread"):
             code_interpreter = create_code_interpreter_tool(file_ids=[file_id])
             agent = self.project_client.agents.create_agent(
