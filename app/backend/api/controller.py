@@ -89,3 +89,19 @@ def post_slm(request_data: PromptRequest):
             headers={"Content-Type": "application/json"}
         )
         return response.json()
+
+@router.post("/dynamic_sessions")
+async def post_dynamic_sessions(request_data: PromptRequest):
+    with tracer.start_as_current_span("post_dynamic_sessions") as parent:
+        parent.set_attributes(
+            {
+                "span_type": "GenAI",
+                "gen_ai.operation.name": "chat",
+                "gen_ai.system": "_OTHER",
+                "gen_ai.request.model": "phi4",
+            }
+        )
+        # LLM を呼び出し、コードを生成する
+        user_message = request_data.prompt
+        code = await code_interpreter_service.process_code_interpreter_without_saving_file(user_message)
+        return {"code": code}

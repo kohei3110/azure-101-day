@@ -92,3 +92,28 @@ class CodeInterpreterService:
                 logging.info(f"Saved image file to: {Path.cwd() / file_name}")
 
             return file_name
+        
+    def get_generated_code(self, thread_id: str):
+        with tracer.start_as_current_span("get_generated_code"):
+            messages = self.project_client.agents.list_messages(thread_id=thread_id)
+            logging.info(f"Messages: {messages}")
+
+            last_msg = messages.get_last_text_message_by_role("assistant")
+            if last_msg:
+                logging.info(f"Last Message: {last_msg.text.value}")
+                return last_msg.text.value
+        
+    def process_code_interpreter_without_saving_file(self, user_message: str):
+        with tracer.start_as_current_span("process_code_interpreter_without_saving_file"):
+            agent, thread = self.create_agent_and_thread()
+            self.send_user_message_to_thread(thread.id, user_message)
+            run = self.project_client.agents.create_and_process_run(thread_id=thread.id, assistant_id=agent.id)
+            logging.info(f"Run finished with status: {run.status}")
+            messages = self.project_client.agents.list_messages(thread_id=thread.id)
+            logging.info(f"Messages: {messages}")
+
+            last_msg = messages.get_last_text_message_by_role("assistant")
+            if last_msg:
+                logging.info(f"Last Message: {last_msg.text.value}")
+                return last_msg.text.value
+            return last_msg.text.value
