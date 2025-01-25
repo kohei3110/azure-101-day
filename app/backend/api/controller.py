@@ -124,7 +124,7 @@ async def post_dynamic_sessions(
         access_token = token.token
         print(f"Access token: {access_token}")
         # トークンを使って管理エンドポイントに POST リクエスト
-        REGION = os.getenv("REGION", "eastus")
+        REGION = os.getenv("REGION", "eastasia")
         SUBSCRIPTION_ID = os.getenv("SUBSCRIPTION_ID")
         RESOURCE_GROUP = os.getenv("RESOURCE_GROUP")
         ACA_DYNAMICSESSIONS_POOL_NAME = os.getenv("ACA_DYNAMICSESSIONS_POOL_NAME", "pool-azure101day-demo-ce-001")
