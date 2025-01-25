@@ -168,7 +168,8 @@ async def post_dynamic_sessions(
                 json={
                     "codeInputType": "inline",
                     "executionType": "synchronous",
-                    "code": code
+                    # "code": code
+                    "code": "print('Hello, World!')"
                 }
             )
             return {"session_id": session_id}
