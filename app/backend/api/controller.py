@@ -159,7 +159,7 @@ async def post_dynamic_sessions(
             code = re.sub(file_path_pattern, file_path_replacement, code)
             print(f"Code2: {code}")
             # コードを実行
-            response = requests.post(
+            requests.post(
                 url + f"/code/execute?api-version=2024-02-02-preview&identifier={session_id}",
                 headers={
                     "Authorization": f"Bearer {access_token}",
@@ -171,9 +171,6 @@ async def post_dynamic_sessions(
                     "code": code
                 }
             )
-            print(f"Response: {response.json()}")
-            return {
-                "response": response
-            }
+            return {"session_id": session_id}
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
