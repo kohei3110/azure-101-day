@@ -91,7 +91,7 @@ def post_slm(request_data: PromptRequest):
         return response.json()
 
 @router.post("/dynamic_sessions")
-async def post_dynamic_sessions(request_data: PromptRequest):
+async def post_dynamic_sessions(file: UploadFile = File(...), request_data: PromptRequest = Form(...)):
     with tracer.start_as_current_span("post_dynamic_sessions") as parent:
         parent.set_attributes(
             {
