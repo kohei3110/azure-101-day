@@ -52,7 +52,7 @@ class CodeInterpreterService:
                 logging.info(f"Run finished with status: {run.status}")
                 messages = self.project_client.agents.list_messages(thread_id=thread.id)
                 logging.info(f"Messages: {messages}")
-                last_msg = messages.get_last_message_by_role(messages, "assistant")
+                last_msg = messages.get_last_text_message_by_role("assistant")
                 if last_msg:
                     return last_msg.text.value
             finally:
