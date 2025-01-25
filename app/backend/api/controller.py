@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 import shutil
 import uuid
@@ -151,7 +152,13 @@ async def post_dynamic_sessions(
                 }
             )
             print(f"File list: {file_list.json()}")
-
+            # コードを修正
+            # Replace file_path in the code using regex
+            file_path_pattern = r'/mnt/data/assistant-[\w-]+'
+            file_path_replacement = f'/mnt/data/{file.filename}'
+            code = re.sub(file_path_pattern, file_path_replacement, code)
+            print(f"Code2: {code}")
+            # コードを実行
             response = requests.post(
                 url + f"/code/execute?api-version=2024-02-02-preview&identifier={session_id}",
                 headers={
