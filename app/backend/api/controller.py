@@ -2,7 +2,7 @@ import os
 import requests
 import shutil
 from pathlib import Path
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Body, Depends, File, Form, UploadFile
 from fastapi.responses import FileResponse
 
 from models.prompt_request import PromptRequest
@@ -91,7 +91,7 @@ def post_slm(request_data: PromptRequest):
         return response.json()
 
 @router.post("/dynamic_sessions")
-async def post_dynamic_sessions(file: UploadFile = File(...), request_data: PromptRequest = Form(...)):
+async def post_dynamic_sessions(file: UploadFile = File(...), request_data: PromptRequest = Body(...)):
     with tracer.start_as_current_span("post_dynamic_sessions") as parent:
         parent.set_attributes(
             {
