@@ -171,7 +171,7 @@ async def post_dynamic_sessions(
                     "code": code
                 }
             )
-            print(f"Response: {response}")
+            print(f"Response: {response.json()}")
             return {
                 "response": response
             }
