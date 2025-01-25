@@ -110,6 +110,8 @@ async def post_dynamic_sessions(
         )
         user_message = message
         code = await code_interpreter_service.process_message_only(file, user_message, file_handler)
+        if code.startswith("```") and code.endswith("```"):
+            code = code[3:-3].strip()
         # Entra ID からトークンを取得（プールの管理 API エンドポイントを直接使用している場合は、トークンを生成し、それを HTTP 要求の Authorization ヘッダーに含める必要があります。 前述のロールの割り当てに加えて、トークンには、値 https://dynamicsessions.io を持つ対象者 (aud) クレームが含まれている必要があります。）
         credential = DefaultAzureCredential()
         token = credential.get_token("https://dynamicsessions.io/.default")
@@ -121,16 +123,19 @@ async def post_dynamic_sessions(
         RESOURCE_GROUP = os.getenv("RESOURCE_GROUP")
         ACA_DYNAMICSESSIONS_POOL_NAME = os.getenv("ACA_DYNAMICSESSIONS_POOL_NAME", "pool-azure101day-demo-ce-001")
         url = f"https://{REGION}.dynamicsessions.io/subscriptions/{SUBSCRIPTION_ID}/resourceGroups/{RESOURCE_GROUP}/sessionPools/{ACA_DYNAMICSESSIONS_POOL_NAME}"
-        response = requests.post(
-            url,
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "codeInputType": "inline",
-                "executionType": "synchronous",
-                "code": code
-            }
-        )
-        return response.json()
+        try:
+            response = requests.post(
+                url + "/code/execute",
+                headers={
+                    "Authorization": f"Bearer {access_token}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "codeInputType": "inline",
+                    "executionType": "synchronous",
+                    "code": code
+                }
+            )
+            return response.json()
+        except Exception as e:
+            return {"error": str(e)}
