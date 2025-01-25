@@ -91,7 +91,12 @@ def post_slm(request_data: PromptRequest):
         return response.json()
 
 @router.post("/dynamic_sessions")
-async def post_dynamic_sessions(file: UploadFile = File(...), request_data: PromptRequest = Body(...)):
+async def post_dynamic_sessions(
+    file: UploadFile = File(...), 
+    message: str = Form(...),
+    file_handler: FileHandler = Depends(get_file_handler),
+    code_interpreter_service: CodeInterpreterService = Depends(lambda: code_interpreter_service)
+):
     with tracer.start_as_current_span("post_dynamic_sessions") as parent:
         parent.set_attributes(
             {
@@ -102,6 +107,6 @@ async def post_dynamic_sessions(file: UploadFile = File(...), request_data: Prom
             }
         )
         # LLM を呼び出し、コードを生成する
-        user_message = request_data.prompt
+        user_message = message
         code = await code_interpreter_service.process_message_only(user_message)
         return {"code": code}

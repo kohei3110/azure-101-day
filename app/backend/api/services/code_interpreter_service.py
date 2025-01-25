@@ -34,19 +34,30 @@ class CodeInterpreterService:
                 file_handler.delete_file(file_location)
                 print("Deleted file")
 
-    def process_message_only(self, user_message: str):
-        with tracer.start_as_current_span("process_message_only"):
-            agent = self.create_agent()
-            thread = self.create_thread()
-            self.send_user_message_to_thread(thread.id, user_message)
-            run = self.execute_run(thread.id, agent.id)
-            logging.info(f"Run finished with status: {run.status}")
-            messages = self.project_client.agents.list_messages(thread_id=thread.id)
-            logging.info(f"Messages: {messages}")
-
-            last_msg = self.get_last_message_by_role(messages, "assistant")
-            if last_msg:
-                return last_msg.text.value
+    async def process_message_only(self, file, user_message: str, file_handler: FileHandler):
+        with tracer.start_as_current_span("process_message_only") as span:
+            span.set_attributes(
+                {
+                    "span_type": "HTTP"
+                }
+            )
+            destination: str = os.getenv("DATA_DIR", "/data")
+            file_location = await file_handler.save_temp_file(file, destination)
+            try:
+                uploaded_file = self.upload_file_to_project(file_location)
+                agent = self.create_agent(uploaded_file.id)
+                thread = self.create_thread()
+                self.send_user_message_to_thread(thread.id, user_message)
+                run = self.execute_run(thread.id, agent.id)
+                logging.info(f"Run finished with status: {run.status}")
+                messages = self.project_client.agents.list_messages(thread_id=thread.id)
+                logging.info(f"Messages: {messages}")
+                last_msg = messages.get_last_message_by_role(messages, "assistant")
+                if last_msg:
+                    return last_msg.text.value
+            finally:
+                file_handler.delete_file(file_location)
+                print("Deleted file")
 
     def upload_file_to_project(self, file_location: str):
         with tracer.start_as_current_span("upload_file_to_project"):
