@@ -2,7 +2,7 @@ import os
 import requests
 import shutil
 from pathlib import Path
-from fastapi import APIRouter, Body, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
 from models.prompt_request import PromptRequest
@@ -112,6 +112,7 @@ async def post_dynamic_sessions(
         code = await code_interpreter_service.process_message_only(file, user_message, file_handler)
         if code.startswith("```") and code.endswith("```"):
             code = code[3:-3].strip()
+        print(f"Code: {code}")
         # Entra ID からトークンを取得（プールの管理 API エンドポイントを直接使用している場合は、トークンを生成し、それを HTTP 要求の Authorization ヘッダーに含める必要があります。 前述のロールの割り当てに加えて、トークンには、値 https://dynamicsessions.io を持つ対象者 (aud) クレームが含まれている必要があります。）
         credential = DefaultAzureCredential()
         token = credential.get_token("https://dynamicsessions.io/.default")
@@ -138,4 +139,4 @@ async def post_dynamic_sessions(
             )
             return response.json()
         except Exception as e:
-            return {"error": str(e)}
+            raise HTTPException(status_code=500, detail=str(e))
