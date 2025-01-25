@@ -133,6 +133,17 @@ async def post_dynamic_sessions(
         session_id = str(uuid.uuid4())
 
         try:
+            # ファイルをアップロード
+            requests.post(
+                url + f"/files/upload?api-version=2024-02-02-preview&identifier={session_id}",
+                headers={
+                    "Authorization": f"Bearer {access_token}"
+                },
+                files={
+                    "file": (file.filename, file.file, "application/octet-stream")
+                }
+            )
+            # ファイルパスを取得
             response = requests.post(
                 url + f"/code/execute?api-version=2024-02-02-preview&identifier={session_id}",
                 headers={
