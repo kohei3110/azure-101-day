@@ -11,6 +11,8 @@ from utils.file_handler import FileHandler
 from startup import code_interpreter_service
 from tracing.tracing import tracer
 
+from azure.identity import DefaultAzureCredential
+
 router = APIRouter()
 
 def get_file_handler():
@@ -106,7 +108,29 @@ async def post_dynamic_sessions(
                 "gen_ai.request.model": "phi4",
             }
         )
-        # LLM を呼び出し、コードを生成する
         user_message = message
         code = await code_interpreter_service.process_message_only(file, user_message, file_handler)
-        return {"code": code}
+        # Entra ID からトークンを取得（プールの管理 API エンドポイントを直接使用している場合は、トークンを生成し、それを HTTP 要求の Authorization ヘッダーに含める必要があります。 前述のロールの割り当てに加えて、トークンには、値 https://dynamicsessions.io を持つ対象者 (aud) クレームが含まれている必要があります。）
+        credential = DefaultAzureCredential()
+        token = credential.get_token("https://dynamicsessions.io/.default")
+        access_token = token.token
+        print(f"Access token: {access_token}")
+        # トークンを使って管理エンドポイントに POST リクエスト
+        REGION = os.getenv("REGION", "eastus")
+        SUBSCRIPTION_ID = os.getenv("SUBSCRIPTION_ID")
+        RESOURCE_GROUP = os.getenv("RESOURCE_GROUP")
+        ACA_DYNAMICSESSIONS_POOL_NAME = os.getenv("ACA_DYNAMICSESSIONS_POOL_NAME", "pool-azure101day-demo-ce-001")
+        url = f"https://{REGION}.dynamicsessions.io/subscriptions/{SUBSCRIPTION_ID}/resourceGroups/{RESOURCE_GROUP}/sessionPools/{ACA_DYNAMICSESSIONS_POOL_NAME}"
+        response = requests.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "codeInputType": "inline",
+                "executionType": "synchronous",
+                "code": code
+            }
+        )
+        return response.json()

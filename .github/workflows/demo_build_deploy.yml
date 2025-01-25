@@ -33,6 +33,7 @@ jobs:
       CONTAINER_APP_NAME: ca-azure101day-demo-ce-001
       RESOURCE_GROUP: rg-azure101day-demo-canadaeast-001
       STORAGE_NAME: files
+      REGION: eastasia
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CRED }}
       PROJECT_CONNECTION_STRING: ${{ secrets.PROJECT_CONNECTION_STRING }}
