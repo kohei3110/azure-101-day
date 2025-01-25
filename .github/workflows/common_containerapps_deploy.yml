@@ -44,6 +44,8 @@ on:
         required: true
       AZURE_TENANT_ID:
         required: true
+      SUBSCRIPTION_ID:
+        required: true
 
 env:
   PORT: 8000
