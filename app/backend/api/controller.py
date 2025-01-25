@@ -144,6 +144,14 @@ async def post_dynamic_sessions(
                 }
             )
             # ファイルパスを取得
+            file_list = requests.get(
+                url + f"/files?api-version=2024-02-02-preview&identifier={session_id}",
+                headers={
+                    "Authorization": f"Bearer {access_token}"
+                }
+            )
+            print(f"File list: {file_list}")
+            
             response = requests.post(
                 url + f"/code/execute?api-version=2024-02-02-preview&identifier={session_id}",
                 headers={
