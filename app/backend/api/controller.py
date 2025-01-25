@@ -1,6 +1,7 @@
 import os
 import requests
 import shutil
+import uuid
 from pathlib import Path
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
@@ -128,9 +129,12 @@ async def post_dynamic_sessions(
         RESOURCE_GROUP = os.getenv("RESOURCE_GROUP")
         ACA_DYNAMICSESSIONS_POOL_NAME = os.getenv("ACA_DYNAMICSESSIONS_POOL_NAME", "pool-azure101day-demo-ce-001")
         url = f"https://{REGION}.dynamicsessions.io/subscriptions/{SUBSCRIPTION_ID}/resourceGroups/{RESOURCE_GROUP}/sessionPools/{ACA_DYNAMICSESSIONS_POOL_NAME}"
+
+        session_id = str(uuid.uuid4())
+
         try:
             response = requests.post(
-                url + "/code/execute",
+                url + f"/code/execute?api-version=2024-02-02-preview&identifier={session_id}",
                 headers={
                     "Authorization": f"Bearer {access_token}",
                     "Content-Type": "application/json"
