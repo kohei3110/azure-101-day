@@ -108,5 +108,5 @@ async def post_dynamic_sessions(
         )
         # LLM を呼び出し、コードを生成する
         user_message = message
-        code = await code_interpreter_service.process_message_only(user_message)
+        code = await code_interpreter_service.process_message_only(file, user_message, file_handler)
         return {"code": code}
