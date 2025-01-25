@@ -39,7 +39,7 @@ class CodeInterpreterService:
             agent = self.create_agent()
             thread = self.create_thread()
             self.send_user_message_to_thread(thread.id, user_message)
-            run = self.create_and_execute_run(thread.id, agent.id)
+            run = self.execute_run(thread.id, agent.id)
             logging.info(f"Run finished with status: {run.status}")
             messages = self.project_client.agents.list_messages(thread_id=thread.id)
             logging.info(f"Messages: {messages}")
