@@ -110,8 +110,12 @@ async def post_dynamic_sessions(
         )
         user_message = message
         code = await code_interpreter_service.process_message_only(file, user_message, file_handler)
+        # Remove triple quotes from the beginning and end of the code
         if code.startswith("```") and code.endswith("```"):
             code = code[3:-3].strip()
+            # Remove 'python' if it is at the beginning of the code
+            if code.startswith("python"):
+                code = code[6:].strip()
         print(f"Code: {code}")
         # Entra ID からトークンを取得（プールの管理 API エンドポイントを直接使用している場合は、トークンを生成し、それを HTTP 要求の Authorization ヘッダーに含める必要があります。 前述のロールの割り当てに加えて、トークンには、値 https://dynamicsessions.io を持つ対象者 (aud) クレームが含まれている必要があります。）
         credential = DefaultAzureCredential()
