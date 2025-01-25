@@ -141,6 +141,9 @@ async def post_dynamic_sessions(
                     "code": code
                 }
             )
-            return response.json()
+            print(f"Response: {response}")
+            return {
+                "response": response
+            }
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
