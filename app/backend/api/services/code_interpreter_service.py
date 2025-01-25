@@ -12,8 +12,8 @@ class CodeInterpreterService:
     def __init__(self, project_client):
         self.project_client = project_client
 
-    async def process_code_interpreter(self, file, user_message: str, file_handler: FileHandler):
-        with tracer.start_as_current_span("process_code_interpreter") as span:
+    async def process_file_and_message(self, file, user_message: str, file_handler: FileHandler):
+        with tracer.start_as_current_span("process_file_and_message") as span:
             span.set_attributes(
                 {
                     "span_type": "HTTP"
@@ -23,15 +23,30 @@ class CodeInterpreterService:
             file_location = await file_handler.save_temp_file(file, destination)
             try:
                 uploaded_file = self.upload_file_to_project(file_location)
-                agent, thread = self.create_agent_and_thread(uploaded_file.id)
+                agent = self.create_agent(uploaded_file.id)
+                thread = self.create_thread()
                 self.send_user_message_to_thread(thread.id, user_message)
-                run = self.create_and_execute_run(thread.id, agent.id)
+                run = self.execute_run(thread.id, agent.id)
                 self.handle_run_completion(run, thread.id, uploaded_file.id)
                 file_name = self.save_generated_images(thread.id)
                 return file_name
             finally:
                 file_handler.delete_file(file_location)
                 print("Deleted file")
+
+    def process_message_only(self, user_message: str):
+        with tracer.start_as_current_span("process_message_only"):
+            agent = self.create_agent()
+            thread = self.create_thread()
+            self.send_user_message_to_thread(thread.id, user_message)
+            run = self.create_and_execute_run(thread.id, agent.id)
+            logging.info(f"Run finished with status: {run.status}")
+            messages = self.project_client.agents.list_messages(thread_id=thread.id)
+            logging.info(f"Messages: {messages}")
+
+            last_msg = self.get_last_message_by_role(messages, "assistant")
+            if last_msg:
+                return last_msg.text.value
 
     def upload_file_to_project(self, file_location: str):
         with tracer.start_as_current_span("upload_file_to_project"):
@@ -40,10 +55,10 @@ class CodeInterpreterService:
             )
             logging.info(f"Uploaded file, file ID: {uploaded_file.id}")
             return uploaded_file
-
-    def create_agent_and_thread(self, file_id: Optional[str] = None):
-        with tracer.start_as_current_span("create_agent_and_thread"):
-            code_interpreter = create_code_interpreter_tool(file_ids=[file_id])
+        
+    def create_agent(self, file_id: Optional[str] = None):
+        with tracer.start_as_current_span("create_agent"):
+            code_interpreter = create_code_interpreter_tool(file_ids=[file_id] if file_id else [])
             agent = self.project_client.agents.create_agent(
                 model="gpt-4o-mini",
                 name="code_interpreter",
@@ -51,9 +66,13 @@ class CodeInterpreterService:
                 tools=code_interpreter.definitions,
                 tool_resources=code_interpreter.resources,
             )
+            return agent
+        
+    def create_thread(self):
+        with tracer.start_as_current_span("create_thread"):
             thread = self.project_client.agents.create_thread()
             logging.info(f"Created thread, thread ID: {thread.id}")
-            return agent, thread
+            return thread
 
     def send_user_message_to_thread(self, thread_id: str, user_message: str):
         with tracer.start_as_current_span("send_user_message_to_thread"):
@@ -64,8 +83,8 @@ class CodeInterpreterService:
             )
             logging.info(f"Created message, message ID: {message.id}")
 
-    def create_and_execute_run(self, thread_id: str, agent_id: str):
-        with tracer.start_as_current_span("create_and_execute_run"):
+    def execute_run(self, thread_id: str, agent_id: str):
+        with tracer.start_as_current_span("execute_run"):
             run = self.project_client.agents.create_and_process_run(thread_id=thread_id, assistant_id=agent_id)
             logging.info(f"Run finished with status: {run.status}")
             return run
@@ -103,18 +122,3 @@ class CodeInterpreterService:
             if last_msg:
                 logging.info(f"Last Message: {last_msg.text.value}")
                 return last_msg.text.value
-        
-    def process_code_interpreter_without_saving_file(self, user_message: str):
-        with tracer.start_as_current_span("process_code_interpreter_without_saving_file"):
-            agent, thread = self.create_agent_and_thread()
-            self.send_user_message_to_thread(thread.id, user_message)
-            run = self.project_client.agents.create_and_process_run(thread_id=thread.id, assistant_id=agent.id)
-            logging.info(f"Run finished with status: {run.status}")
-            messages = self.project_client.agents.list_messages(thread_id=thread.id)
-            logging.info(f"Messages: {messages}")
-
-            last_msg = messages.get_last_text_message_by_role("assistant")
-            if last_msg:
-                logging.info(f"Last Message: {last_msg.text.value}")
-                return last_msg.text.value
-            return last_msg.text.value

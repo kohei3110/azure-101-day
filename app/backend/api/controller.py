@@ -65,7 +65,7 @@ async def post_code_interpreter(
             }
         )
         user_message = message
-        file_name = await code_interpreter_service.process_code_interpreter(file, user_message, file_handler)
+        file_name = await code_interpreter_service.process_file_and_message(file, user_message, file_handler)
         return FileResponse(path=file_name, filename=file_name)
     
 @router.post("/slm")
@@ -103,5 +103,5 @@ async def post_dynamic_sessions(request_data: PromptRequest):
         )
         # LLM を呼び出し、コードを生成する
         user_message = request_data.prompt
-        code = await code_interpreter_service.process_code_interpreter_without_saving_file(user_message)
+        code = await code_interpreter_service.process_message_only(user_message)
         return {"code": code}
