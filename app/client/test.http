@@ -1,9 +1,108 @@
-POST http://localhost:8000/files/
+# @host=https://app-azure101day-demo-cc-001-hreudvatafamcsgx.canadacentral-01.azurewebsites.net
+
+# POST http://localhost:8000/files/
+# Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="file"; filename="example.txt"
+# Content-Type: text/plain
+
+# This is the content of the file.
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+# # Container Apps (ファイル共有へのアップロード)
+# POST https://ca-azure101day-demo-ce-001.gentleforest-c0e82630.canadaeast.azurecontainerapps.io/files
+# Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="file"; filename="example.txt"
+# Content-Type: text/plain
+
+# This is the content of the file.
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+# # Container Apps (エフェメラルストレージへのアップロード)
+# POST https://ca-azure101day-demo-ce-001.gentleforest-c0e82630.canadaeast.azurecontainerapps.io/data
+# Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="file"; filename="example.txt"
+# Content-Type: text/plain
+
+# This is the content of the file.
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+## App Service (ファイル共有へのアップロード)
+# POST https://app-azure101day-demo-cc-001-hreudvatafamcsgx.canadacentral-01.azurewebsites.net/files
+# Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="file"; filename="example-app-service.txt"
+# Content-Type: text/plain
+
+# This is the content of the file.
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+## App Service (ローカルストレージへのアップロード)
+# POST https://app-azure101day-demo-cc-001-hreudvatafamcsgx.canadacentral-01.azurewebsites.net/data
+# Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="file"; filename="example-app-service.txt"
+# Content-Type: text/plain
+
+# This is the content of the file.
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+# # Code Interpreter
+# POST https://ca-azure101day-demo-ce-001.gentleforest-c0e82630.canadaeast.azurecontainerapps.io/code_interpreter
+# Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="file"; filename="nifty_500_quarterly_results.csv"
+# Content-Type: text/csv
+
+# < ./nifty_500_quarterly_results.csv
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="message"
+
+# アップロードされたCSVファイルから、運輸セクターの営業利益の棒グラフを作成し、ファイルを提供してください。
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+# # App Service (Code Interpreter)
+# POST https://app-azure101day-demo-cc-002-d0arhcfdguf8huer.canadacentral-01.azurewebsites.net/code_interpreter
+# Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="file"; filename="nifty_500_quarterly_results.csv"
+# Content-Type: text/csv
+
+# < ./nifty_500_quarterly_results.csv
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="message"
+
+# アップロードされたCSVファイルから、運輸セクターの営業利益の棒グラフを作成し、ファイルを提供してください。
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+# ## Container Apps (SLM)
+# POST https://ca-azure101day-demo-ce-001.gentleforest-c0e82630.canadaeast.azurecontainerapps.io/slm
+# Content-Type: application/json
+
+# {
+#   "prompt": "こんにちは。"
+# }
+
+## Container Apps (Dynamic Session)
+POST https://ca-azure101day-demo-ce-001.gentleforest-c0e82630.canadaeast.azurecontainerapps.io/dynamic_sessions
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="file"; filename="example.txt"
-Content-Type: text/plain
+Content-Disposition: form-data; name="file"; filename="nifty_500_quarterly_results.csv"
+Content-Type: text/csv
 
-This is the content of the file.
+< ./nifty_500_quarterly_results.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="message"
+
+アップロードされたCSVファイルから、運輸セクターの営業利益の棒グラフを作成するためのPythonコードを明示的に出力し、回答として提供してください。回答には、Pythonコードのみを含め、他の情報は**絶対に**含めないでください。
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--

@@ -1,0 +1,56 @@
+name: Build and deploy backend app to dev
+
+on:
+  push:
+
+jobs:
+  build-containerapps-workflow:
+    uses: ./.github/workflows/common_container_image_build_push.yml
+    with:
+      WORKING_DIRECTORY_API: app/backend/api
+      WORKING_DIRECTORY_OTELCOLLECTOR: app/backend/opentelemetry
+      WORKING_DIRECTORY_SLM: app/backend/slm
+      ACR: crazure101daydemoce001.azurecr.io
+      IMAGE_NAME_API: sample
+      IMAGE_NAME_OTELCOLLECTOR: otel-collector
+      IMAGE_NAME_SLM: slm
+      TAG: ${{ github.sha }}
+    secrets:
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ secrets.APPLICATIONINSIGHTS_CONNECTION_STRING }}
+  
+  deploy-containerapps-workflow:
+    needs: build-containerapps-workflow
+    uses: ./.github/workflows/common_containerapps_deploy.yml
+    with:
+      WORKING_DIRECTORY: app/backend/api
+      ACR: crazure101daydemoce001.azurecr.io
+      IMAGE_NAME_API: sample
+      IMAGE_NAME_OTELCOLLECTOR: otel-collector
+      IMAGE_NAME_SLM: slm
+      TAG: ${{ github.sha }}
+      CONTAINER_APP_NAME: ca-azure101day-demo-ce-001
+      RESOURCE_GROUP: rg-azure101day-demo-canadaeast-001
+      STORAGE_NAME: files
+      REGION: eastasia
+    secrets:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CRED }}
+      PROJECT_CONNECTION_STRING: ${{ secrets.PROJECT_CONNECTION_STRING }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+      
+  deploy-webappforcontainers-workflow:
+    needs: build-containerapps-workflow
+    uses: ./.github/workflows/common_webappforcontainers_deploy.yml
+    with:
+      AZURE_WEBAPP_NAME: app-azure101day-demo-ce-002
+      WORKING_DIRECTORY: app/backend/api
+      ACR: crazure101daydemoce001.azurecr.io
+      IMAGE_NAME_API: sample
+      IMAGE_NAME_OTELCOLLECTOR: otel-collector
+      TAG: ${{ github.sha }}
+    secrets:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CRED }}

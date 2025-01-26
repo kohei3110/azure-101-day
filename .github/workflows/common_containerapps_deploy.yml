@@ -1,0 +1,132 @@
+name: Deploy app to Azure Container Apps
+
+on:
+  workflow_call:
+    inputs:
+      WORKING_DIRECTORY:
+        required: true
+        type: string
+      ACR:
+        required: true
+        type: string
+      IMAGE_NAME_API:
+        required: true
+        type: string
+      IMAGE_NAME_OTELCOLLECTOR:
+        required: true
+        type: string
+      TAG:
+        required: true
+        type: string
+      CONTAINER_APP_NAME:
+        required: true
+        type: string
+      RESOURCE_GROUP:
+        required: true
+        type: string
+      STORAGE_NAME:
+        required: true
+        type: string
+      IMAGE_NAME_SLM:
+        required: true
+        type: string
+      REGION:
+        required: true
+        type: string
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
+      PROJECT_CONNECTION_STRING:
+        required: true
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_CLIENT_SECRET:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
+      SUBSCRIPTION_ID:
+        required: true
+
+env:
+  PORT: 8000
+  INGRESS: external
+  FULL_IMAGE_NAME_API: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_API }}:${{ inputs.TAG }}
+  FULL_IMAGE_NAME_OTELCOLLECTOR: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_OTELCOLLECTOR }}:${{ inputs.TAG }}
+  FULL_IMAGE_NAME_SLM: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_SLM }}:${{ inputs.TAG }}
+  CONTAINER_NAME_API: ca-azure101day-demo-ce-001
+
+jobs:
+  deploy-app:
+    name: Deploy App to Azure Container Apps
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout GitHub repository
+      uses: actions/checkout@v3
+    
+    - name: Log in to Azure
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Create directories for template.yml
+      run: |
+        mkdir -p ${{ inputs.WORKING_DIRECTORY }}/config/containerapps
+
+    - name: Generate template.yml with dynamic GIT_SHA
+      run: |
+        cat <<EOF > ${{ inputs.WORKING_DIRECTORY }}/config/containerapps/template.yml
+        template:
+          volumes:
+          - name: emptydata
+            storageType: EmptyDir
+          - name: files
+            storageType: AzureFile
+            storageName: ${{ inputs.STORAGE_NAME }}
+          containers:
+          - image: ${{ env.FULL_IMAGE_NAME_API }}
+            name: ${{ env.CONTAINER_NAME_API }}
+            volumeMounts:
+            - mountPath: "/data"
+              volumeName: emptydata
+            - mountPath: "/files"
+              volumeName: files
+            resources:
+              cpu: 1
+              memory: 1Gi
+          - image: ${{ env.FULL_IMAGE_NAME_OTELCOLLECTOR }}
+            name: otel-collector
+            resources:
+              cpu: 1
+              memory: 1Gi
+          - image: ${{ env.FULL_IMAGE_NAME_SLM }}
+            name: slm
+            resources:
+              cpu: 2
+              memory: 6Gi
+          initContainers: null
+          scale:
+            maxReplicas: 2
+            minReplicas: 1
+            rules:
+            - name: httpscalingrule
+              custom:
+                type: http
+                metadata:
+                  concurrentRequests: '50'
+        EOF
+    
+    - name: Deploy API image To Azure Container Apps with OTEL Collector
+      uses: azure/container-apps-deploy-action@v1
+      with:
+        containerAppName: ${{ inputs.CONTAINER_APP_NAME }}
+        resourceGroup: ${{ inputs.RESOURCE_GROUP }}
+        imageToDeploy: ${{ env.FULL_IMAGE_NAME_API }}
+        targetPort: ${{ env.PORT }}
+        ingress: ${{ env.INGRESS }}
+        environmentVariables: "PROJECT_CONNECTION_STRING=${{ secrets.PROJECT_CONNECTION_STRING }}"
+        yamlConfigPath: ${{ inputs.WORKING_DIRECTORY }}/config/containerapps/template.yml
+
+    - name: Update environment variables for Azure Container Apps
+      run: |
+        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars "PROJECT_CONNECTION_STRING=${{ secrets.PROJECT_CONNECTION_STRING }}" "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" "SIDECAR_SLM_URL=http://localhost:11434/api/generate" "REGION=eastasia" "SUBSCRIPTION_ID=${{ secrets.SUBSCRIPTION_ID }}" "RESOURCE_GROUP=${{ inputs.RESOURCE_GROUP }}" "ACA_DYNAMICSESSIONS_POOL_NAME=pool-azure101day-demo-ce-001"

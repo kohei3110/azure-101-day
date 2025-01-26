@@ -1,0 +1,134 @@
+name: Build and push docker images to Azure Container Registry
+
+on:
+  workflow_call:
+    inputs:
+      WORKING_DIRECTORY_API:
+        required: true
+        type: string
+      WORKING_DIRECTORY_OTELCOLLECTOR:
+        required: true
+        type: string
+      WORKING_DIRECTORY_SLM:
+        required: true
+        type: string
+      ACR:
+        required: true
+        type: string
+      IMAGE_NAME_API:
+        required: true
+        type: string
+      IMAGE_NAME_OTELCOLLECTOR:
+        required: true
+        type: string
+      IMAGE_NAME_SLM:
+        required: true
+        type: string
+      TAG:
+        required: true
+        type: string
+    secrets:
+      ACR_USERNAME:
+        required: true
+      ACR_PASSWORD:
+        required: true
+      APPLICATIONINSIGHTS_CONNECTION_STRING:
+        required: true
+
+env:
+  FULL_IMAGE_NAME_API: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_API }}:${{ inputs.TAG }}
+  FULL_IMAGE_NAME_OTELCOLLECTOR: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_OTELCOLLECTOR }}:${{ inputs.TAG }}
+  FULL_IMAGE_NAME_SLM: ${{ inputs.ACR }}/${{ inputs.IMAGE_NAME_SLM }}:${{ inputs.TAG }}
+
+jobs:
+  build-app:
+    name: Build app and push docker image to Azure Container Registry
+    runs-on: ubuntu-latest
+    
+    steps:
+      - id: checkout
+        name: Checkout GitHub repository
+        uses: actions/checkout@v3
+      
+      - id: login-acr
+        name: Log in Azure Container Registry (ACR)
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ inputs.ACR }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - id: build-image-api
+        name: Build docker image
+        run: |
+          docker build . -t ${{ env.FULL_IMAGE_NAME_API }}
+        working-directory: ${{ inputs.WORKING_DIRECTORY_API }}
+
+      - id: push-image-api
+        name: Push docker image to ACR
+        run: |
+          docker push ${{ env.FULL_IMAGE_NAME_API }}
+        working-directory: ${{ inputs.WORKING_DIRECTORY_API }}
+
+      - id: generate-otelcollector-config
+        name: Generate otel-collector-config.yaml with Application Insights Connection String
+        run: |
+          cat <<EOF > app/backend/opentelemetry/otel-collector-config.yaml
+          receivers:
+            otlp:
+              protocols:
+                grpc:
+                http:
+          
+          processors:
+            batch:
+              send_batch_max_size: 100
+              send_batch_size: 10
+              timeout: 10s            
+          
+          exporters:
+            debug:
+              verbosity: detailed
+            azuremonitor:
+              connection_string: ${{secrets.APPLICATIONINSIGHTS_CONNECTION_STRING}}
+              spaneventsenabled: true
+          
+          service:
+            pipelines:
+              traces:
+                receivers: [otlp]
+                exporters: [azuremonitor, debug]
+                processors: [batch]
+              metrics:
+                receivers: [otlp]
+                exporters: [azuremonitor, debug]
+                processors: [batch]
+              logs:
+                receivers: [otlp]
+                exporters: [azuremonitor, debug]
+                processors: [batch]
+          EOF
+
+      - id: build-image-otelcollector
+        name: Build docker image for otel-collector
+        run: |
+          docker build . -t ${{ env.FULL_IMAGE_NAME_OTELCOLLECTOR }}
+        working-directory: ${{ inputs.WORKING_DIRECTORY_OTELCOLLECTOR }}
+
+      - id: push-image-otelcollector
+        name: Push docker image for otel-collector to ACR
+        run: |
+          docker push ${{ env.FULL_IMAGE_NAME_OTELCOLLECTOR }}
+        working-directory: ${{ inputs.WORKING_DIRECTORY_OTELCOLLECTOR }}
+
+      - id: build-image-slm
+        name: Build docker image for SLM
+        run: |
+          docker build . -t ${{ env.FULL_IMAGE_NAME_SLM }}
+        working-directory: ${{ inputs.WORKING_DIRECTORY_SLM }}
+
+      - id: push-image-slm
+        name: Push docker image for SLM to ACR
+        run: |
+          docker push ${{ env.FULL_IMAGE_NAME_SLM }}
+        working-directory: ${{ inputs.WORKING_DIRECTORY_SLM }}
