@@ -12,6 +12,7 @@ from fastapi.responses import FileResponse
 
 from models.prompt_request import PromptRequest
 from services.code_interpreter_service import CodeInterpreterService
+from services.file_upload_service import FileUploadService
 from utils.file_handler import FileHandler
 from startup import code_interpreter_service
 from tracing.tracing import tracer
@@ -29,29 +30,31 @@ DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 FILE_DIR = Path(os.getenv("FILE_DIR", "/files"))
 
 
+def get_file_upload_service() -> FileUploadService:
+    return FileUploadService(base_dir=Path("/"))
+
+
 @router.post("/data")
-async def upload_data(file: UploadFile = File(...)):
+async def upload_data(
+    file: UploadFile = File(...),
+    file_upload_service: FileUploadService = Depends(get_file_upload_service)
+):
     """Upload a file to the data directory."""
     with tracer.start_as_current_span("upload_data"):
-        if not DATA_DIR.exists():
-            DATA_DIR.mkdir(parents=True, exist_ok=True)
-        save_path = DATA_DIR / file.filename
-        with open(save_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        return {"filename": file.filename}
+        filename = file_upload_service.upload_file(file, "data")
+        return {"filename": filename}
 
 
 @router.post("/files")
-async def upload_files(file: UploadFile = File(...)):
+async def upload_files(
+    file: UploadFile = File(...),                   
+    file_upload_service: FileUploadService = Depends(get_file_upload_service)
+):
     """Upload a file to the data directory."""
     with tracer.start_as_current_span("upload_files"):
-        if not FILE_DIR.exists():
-            FILE_DIR.mkdir(parents=True, exist_ok=True)
-        save_path = FILE_DIR / file.filename
-        with open(save_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        return {"filename": file.filename}
-
+        filename = file_upload_service.upload_file(file, "files")
+        return {"filename": filename}
+        
 
 @router.post("/code_interpreter")
 async def post_code_interpreter(
@@ -130,18 +133,14 @@ async def post_dynamic_sessions(
         code = await code_interpreter_service.process_message_only(
             file, user_message, file_handler
         )
-        # Remove triple quotes from the beginning and end of the code
         if code.startswith("```") and code.endswith("```"):
             code = code[3:-3].strip()
-            # Remove 'python' if it is at the beginning of the code
             if code.startswith("python"):
                 code = code[6:].strip()
-        # Entra ID からトークンを取得
         credential = DefaultAzureCredential()
         token = credential.get_token("https://dynamicsessions.io/.default")
         access_token = token.token
         print(f"Access token: {access_token}")
-        # トークンを使って管理エンドポイントに POST リクエスト
         REGION = os.getenv("REGION", "eastasia")
         SUBSCRIPTION_ID = os.getenv("SUBSCRIPTION_ID")
         RESOURCE_GROUP = os.getenv("RESOURCE_GROUP")
@@ -156,7 +155,7 @@ async def post_dynamic_sessions(
         session_id = str(uuid.uuid4())
 
         try:
-            # ファイルをアップロード
+            # Upload the file
             requests.post(
                 url + f"/files/upload?api-version=2024-02-02-preview&identifier={session_id}",
                 headers={
@@ -166,13 +165,11 @@ async def post_dynamic_sessions(
                     "file": (file.filename, file.file, "application/octet-stream")
                 }
             )
-            # コードを修正
-            # Replace file_path in the code using regex
             file_path_pattern = r'/mnt/data/assistant-[\w-]+'
             file_path_replacement = f'/mnt/data/{file.filename}'
             code = re.sub(file_path_pattern, file_path_replacement, code)
             print(f"Code: {code}")
-            # コードを実行
+            # Execute the code
             requests.post(
                 url + f"/code/execute?api-version=2024-02-02-preview&identifier={session_id}",
                 headers={
