@@ -41,6 +41,7 @@ class Container(containers.DeclarativeContainer):
 
     code_interpreter_service = providers.Factory(
         CodeInterpreterService,
+        project_client=project_client,
         file_repository=file_repository,
         message_repository=message_repository
     )
