@@ -28,9 +28,8 @@ class Container(containers.DeclarativeContainer):
         credential=DefaultAzureCredential()
     )
 
-    file_repository = providers.Factory(
-        FileRepository,
-    )
+    file_repository = providers.Factory(FileRepository)
+    
     message_repository = providers.Factory(
         MessageRepository,
         project_client=project_client
