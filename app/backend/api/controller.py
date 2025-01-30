@@ -22,10 +22,6 @@ from azure.identity import DefaultAzureCredential
 router = APIRouter()
 
 
-def get_file_handler():
-    return FileHandler()
-
-
 DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 FILE_DIR = Path(os.getenv("FILE_DIR", "/files"))
 
@@ -59,10 +55,11 @@ async def upload_files(
         
 
 @router.post("/code_interpreter")
+@inject
 async def post_code_interpreter(
     file: UploadFile = File(...),
     message: str = Form(...),
-    file_handler: FileHandler = Depends(get_file_handler),
+    file_handler: FileHandler = Depends(Provide[Container.file_handler]),
     code_interpreter_service: CodeInterpreterService = Depends(Provide[Container.code_interpreter_service])
 ):
     with tracer.start_as_current_span("post_code_interpreter") as parent:
@@ -112,10 +109,11 @@ def post_slm(request_data: PromptRequest):
 
 
 @router.post("/dynamic_sessions")
+@inject
 async def post_dynamic_sessions(
     file: UploadFile = File(...),
     message: str = Form(...),
-    file_handler: FileHandler = Depends(get_file_handler),
+    file_handler: FileHandler = Depends(Provide[Container.file_handler]),
     code_interpreter_service: CodeInterpreterService = Depends(Provide[Container.code_interpreter_service])
 ):
     with tracer.start_as_current_span("post_dynamic_sessions") as parent:

@@ -4,6 +4,7 @@ from azure.identity import DefaultAzureCredential
 from dependency_injector import containers, providers
 from services.code_interpreter_service import CodeInterpreterService
 from services.file_upload_service import FileUploadService
+from utils.file_handler import FileHandler
 
 class Container(containers.DeclarativeContainer):
 
@@ -22,3 +23,4 @@ class Container(containers.DeclarativeContainer):
         FileUploadService,
         base_dir=base_dir
     )
+    file_handler = providers.Factory(FileHandler)
