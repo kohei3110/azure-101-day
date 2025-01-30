@@ -4,7 +4,10 @@ import requests
 import shutil
 import uuid
 from pathlib import Path
-from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile
+
+from fastapi import (
+    APIRouter, Body, Depends, File, Form, HTTPException, UploadFile
+)
 from fastapi.responses import FileResponse
 
 from models.prompt_request import PromptRequest
@@ -17,11 +20,14 @@ from azure.identity import DefaultAzureCredential
 
 router = APIRouter()
 
+
 def get_file_handler():
     return FileHandler()
 
+
 DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 FILE_DIR = Path(os.getenv("FILE_DIR", "/files"))
+
 
 @router.post("/data")
 async def upload_data(file: UploadFile = File(...)):
@@ -34,6 +40,7 @@ async def upload_data(file: UploadFile = File(...)):
             shutil.copyfileobj(file.file, buffer)
         return {"filename": file.filename}
 
+
 @router.post("/files")
 async def upload_files(file: UploadFile = File(...)):
     """Upload a file to the data directory."""
@@ -45,12 +52,15 @@ async def upload_files(file: UploadFile = File(...)):
             shutil.copyfileobj(file.file, buffer)
         return {"filename": file.filename}
 
+
 @router.post("/code_interpreter")
 async def post_code_interpreter(
-    file: UploadFile = File(...), 
+    file: UploadFile = File(...),
     message: str = Form(...),
     file_handler: FileHandler = Depends(get_file_handler),
-    code_interpreter_service: CodeInterpreterService = Depends(lambda: code_interpreter_service)
+    code_interpreter_service: CodeInterpreterService = Depends(
+        lambda: code_interpreter_service
+    )
 ):
     with tracer.start_as_current_span("post_code_interpreter") as parent:
         parent.set_attributes(
@@ -69,9 +79,12 @@ async def post_code_interpreter(
             }
         )
         user_message = message
-        file_name = await code_interpreter_service.process_file_and_message(file, user_message, file_handler)
+        file_name = await code_interpreter_service.process_file_and_message(
+            file, user_message, file_handler
+        )
         return FileResponse(path=file_name, filename=file_name)
-    
+
+
 @router.post("/slm")
 def post_slm(request_data: PromptRequest):
     with tracer.start_as_current_span("post_slm") as parent:
@@ -94,12 +107,15 @@ def post_slm(request_data: PromptRequest):
         )
         return response.json()
 
+
 @router.post("/dynamic_sessions")
 async def post_dynamic_sessions(
-    file: UploadFile = File(...), 
+    file: UploadFile = File(...),
     message: str = Form(...),
     file_handler: FileHandler = Depends(get_file_handler),
-    code_interpreter_service: CodeInterpreterService = Depends(lambda: code_interpreter_service)
+    code_interpreter_service: CodeInterpreterService = Depends(
+        lambda: code_interpreter_service
+    )
 ):
     with tracer.start_as_current_span("post_dynamic_sessions") as parent:
         parent.set_attributes(
@@ -111,15 +127,16 @@ async def post_dynamic_sessions(
             }
         )
         user_message = message
-        code = await code_interpreter_service.process_message_only(file, user_message, file_handler)
+        code = await code_interpreter_service.process_message_only(
+            file, user_message, file_handler
+        )
         # Remove triple quotes from the beginning and end of the code
         if code.startswith("```") and code.endswith("```"):
             code = code[3:-3].strip()
             # Remove 'python' if it is at the beginning of the code
             if code.startswith("python"):
                 code = code[6:].strip()
-        print(f"Code: {code}")
-        # Entra ID からトークンを取得（プールの管理 API エンドポイントを直接使用している場合は、トークンを生成し、それを HTTP 要求の Authorization ヘッダーに含める必要があります。 前述のロールの割り当てに加えて、トークンには、値 https://dynamicsessions.io を持つ対象者 (aud) クレームが含まれている必要があります。）
+        # Entra ID からトークンを取得
         credential = DefaultAzureCredential()
         token = credential.get_token("https://dynamicsessions.io/.default")
         access_token = token.token
@@ -128,8 +145,13 @@ async def post_dynamic_sessions(
         REGION = os.getenv("REGION", "eastasia")
         SUBSCRIPTION_ID = os.getenv("SUBSCRIPTION_ID")
         RESOURCE_GROUP = os.getenv("RESOURCE_GROUP")
-        ACA_DYNAMICSESSIONS_POOL_NAME = os.getenv("ACA_DYNAMICSESSIONS_POOL_NAME", "pool-azure101day-demo-ce-001")
-        url = f"https://{REGION}.dynamicsessions.io/subscriptions/{SUBSCRIPTION_ID}/resourceGroups/{RESOURCE_GROUP}/sessionPools/{ACA_DYNAMICSESSIONS_POOL_NAME}"
+        ACA_DYNAMICSESSIONS_POOL_NAME = os.getenv(
+            "ACA_DYNAMICSESSIONS_POOL_NAME", "pool-azure101day-demo-ce-001"
+        )
+        url = (
+            f"https://{REGION}.dynamicsessions.io/subscriptions/{SUBSCRIPTION_ID}"
+            f"/resourceGroups/{RESOURCE_GROUP}/sessionPools/{ACA_DYNAMICSESSIONS_POOL_NAME}"
+        )
 
         session_id = str(uuid.uuid4())
 
@@ -144,20 +166,12 @@ async def post_dynamic_sessions(
                     "file": (file.filename, file.file, "application/octet-stream")
                 }
             )
-            # ファイルパスを取得
-            file_list = requests.get(
-                url + f"/files?api-version=2024-02-02-preview&identifier={session_id}",
-                headers={
-                    "Authorization": f"Bearer {access_token}"
-                }
-            )
-            print(f"File list: {file_list.json()}")
             # コードを修正
             # Replace file_path in the code using regex
             file_path_pattern = r'/mnt/data/assistant-[\w-]+'
             file_path_replacement = f'/mnt/data/{file.filename}'
             code = re.sub(file_path_pattern, file_path_replacement, code)
-            print(f"Code2: {code}")
+            print(f"Code: {code}")
             # コードを実行
             requests.post(
                 url + f"/code/execute?api-version=2024-02-02-preview&identifier={session_id}",
