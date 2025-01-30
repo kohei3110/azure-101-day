@@ -16,13 +16,13 @@ class Container(containers.DeclarativeContainer):
     base_dir = providers.Singleton(Path, "/")
 
     ai_project_info = os.getenv("PROJECT_CONNECTION_STRING", "")
-    endpoint, subscription_id, resource_group, project_name = ai_project_info.split(';')
+    endpoint, subscription_id, resource_group_name, project_name = ai_project_info.split(';')
 
     project_client = providers.Singleton(
         AIProjectClient,
         endpoint=endpoint,
         subscription_id=subscription_id,
-        resource_group=resource_group,
+        resource_group_name=resource_group_name,
         project_name=project_name,
         credential=DefaultAzureCredential()
     )
