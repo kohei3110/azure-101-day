@@ -1,7 +1,6 @@
 import os
 import re
 import requests
-import shutil
 import uuid
 from pathlib import Path
 
@@ -10,12 +9,13 @@ from fastapi import (
 )
 from fastapi.responses import FileResponse
 
+from containers import Container
 from models.prompt_request import PromptRequest
 from services.code_interpreter_service import CodeInterpreterService
 from services.file_upload_service import FileUploadService
 from utils.file_handler import FileHandler
-from startup import code_interpreter_service
 from tracing.tracing import tracer
+from dependency_injector.wiring import inject, Provide
 
 from azure.identity import DefaultAzureCredential
 
@@ -35,9 +35,10 @@ def get_file_upload_service() -> FileUploadService:
 
 
 @router.post("/data")
+@inject
 async def upload_data(
     file: UploadFile = File(...),
-    file_upload_service: FileUploadService = Depends(get_file_upload_service)
+    file_upload_service: FileUploadService = Depends(Provide[Container.file_upload_service])
 ):
     """Upload a file to the data directory."""
     with tracer.start_as_current_span("upload_data"):
@@ -46,9 +47,10 @@ async def upload_data(
 
 
 @router.post("/files")
+@inject
 async def upload_files(
     file: UploadFile = File(...),                   
-    file_upload_service: FileUploadService = Depends(get_file_upload_service)
+    file_upload_service: FileUploadService = Depends(Provide[Container.file_upload_service])
 ):
     """Upload a file to the data directory."""
     with tracer.start_as_current_span("upload_files"):
@@ -61,9 +63,7 @@ async def post_code_interpreter(
     file: UploadFile = File(...),
     message: str = Form(...),
     file_handler: FileHandler = Depends(get_file_handler),
-    code_interpreter_service: CodeInterpreterService = Depends(
-        lambda: code_interpreter_service
-    )
+    code_interpreter_service: CodeInterpreterService = Depends(Provide[Container.code_interpreter_service])
 ):
     with tracer.start_as_current_span("post_code_interpreter") as parent:
         parent.set_attributes(
@@ -116,9 +116,7 @@ async def post_dynamic_sessions(
     file: UploadFile = File(...),
     message: str = Form(...),
     file_handler: FileHandler = Depends(get_file_handler),
-    code_interpreter_service: CodeInterpreterService = Depends(
-        lambda: code_interpreter_service
-    )
+    code_interpreter_service: CodeInterpreterService = Depends(Provide[Container.code_interpreter_service])
 ):
     with tracer.start_as_current_span("post_dynamic_sessions") as parent:
         parent.set_attributes(

@@ -4,15 +4,9 @@ from pathlib import Path
 from fastapi import FastAPI
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from azure.ai.projects import AIProjectClient
-from azure.identity import DefaultAzureCredential
-
-from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
-
-import controller
-from services.code_interpreter_service import CodeInterpreterService
+from controller import router as api_router
 from tracing.tracing import tracer
-from .containers import Container
+from containers import Container
 
 logging.basicConfig(
     level=logging.DEBUG
@@ -34,14 +28,20 @@ scheduler.start()
 
 def create_app() -> FastAPI:
     container = Container()
+    container.wire(modules=["api.controller"])
+
     app = FastAPI()
-    app.include_router(controller.router)
+
+    @app.on_event("startup")
+    async def startup_event():
+        # 必要な初期化処理をここに追加
+        pass
+
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        # 必要なクリーンアップ処理をここに追加
+        pass
+
+    app.include_router(api_router)
+
     return app
-
-app = create_app()
-
-project_client: AIProjectClient = AIProjectClient.from_connection_string(
-    credential=DefaultAzureCredential(), conn_str=os.environ["PROJECT_CONNECTION_STRING"]
-)
-
-code_interpreter_service = CodeInterpreterService(project_client)
