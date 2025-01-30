@@ -5,7 +5,7 @@ import uuid
 from pathlib import Path
 
 from fastapi import (
-    APIRouter, Body, Depends, File, Form, HTTPException, UploadFile
+    APIRouter, Depends, File, Form, HTTPException, UploadFile
 )
 from fastapi.responses import FileResponse
 
@@ -34,7 +34,9 @@ def get_file_upload_service() -> FileUploadService:
 @inject
 async def upload_data(
     file: UploadFile = File(...),
-    file_upload_service: FileUploadService = Depends(Provide[Container.file_upload_service])
+    file_upload_service: FileUploadService = Depends(
+        Provide[Container.file_upload_service]
+    )
 ):
     """Upload a file to the data directory."""
     with tracer.start_as_current_span("upload_data"):
@@ -46,7 +48,9 @@ async def upload_data(
 @inject
 async def upload_files(
     file: UploadFile = File(...),                   
-    file_upload_service: FileUploadService = Depends(Provide[Container.file_upload_service])
+    file_upload_service: FileUploadService = Depends(
+        Provide[Container.file_upload_service]
+    )
 ):
     """Upload a file to the data directory."""
     with tracer.start_as_current_span("upload_files"):
@@ -59,8 +63,9 @@ async def upload_files(
 async def post_code_interpreter(
     file: UploadFile = File(...),
     message: str = Form(...),
-    file_handler: FileHandler = Depends(Provide[Container.file_handler]),
-    code_interpreter_service: CodeInterpreterService = Depends(Provide[Container.code_interpreter_service])
+    code_interpreter_service: CodeInterpreterService = Depends(
+        Provide[Container.code_interpreter_service]
+    )
 ):
     with tracer.start_as_current_span("post_code_interpreter") as parent:
         parent.set_attributes(
@@ -80,7 +85,7 @@ async def post_code_interpreter(
         )
         user_message = message
         file_name = await code_interpreter_service.process_file_and_message(
-            file, user_message, file_handler
+            file, user_message
         )
         return FileResponse(path=file_name, filename=file_name)
 
@@ -113,8 +118,9 @@ def post_slm(request_data: PromptRequest):
 async def post_dynamic_sessions(
     file: UploadFile = File(...),
     message: str = Form(...),
-    file_handler: FileHandler = Depends(Provide[Container.file_handler]),
-    code_interpreter_service: CodeInterpreterService = Depends(Provide[Container.code_interpreter_service])
+    code_interpreter_service: CodeInterpreterService = Depends(
+        Provide[Container.code_interpreter_service]
+    )
 ):
     with tracer.start_as_current_span("post_dynamic_sessions") as parent:
         parent.set_attributes(
@@ -126,9 +132,7 @@ async def post_dynamic_sessions(
             }
         )
         user_message = message
-        code = await code_interpreter_service.process_message_only(
-            file, user_message, file_handler
-        )
+        code = await code_interpreter_service.process_message_only(file, user_message)
         if code.startswith("```") and code.endswith("```"):
             code = code[3:-3].strip()
             if code.startswith("python"):
