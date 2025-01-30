@@ -7,7 +7,6 @@ from repositories.file_repository import FileRepository
 from repositories.message_repository import MessageRepository
 from services.code_interpreter_service import CodeInterpreterService
 from services.file_upload_service import FileUploadService
-from utils.file_handler import FileHandler
 
 class Container(containers.DeclarativeContainer):
 
@@ -29,10 +28,8 @@ class Container(containers.DeclarativeContainer):
         credential=DefaultAzureCredential()
     )
 
-    file_handler = providers.Factory(FileHandler)
     file_repository = providers.Factory(
         FileRepository,
-        file_handler=file_handler
     )
     message_repository = providers.Factory(
         MessageRepository,
@@ -49,4 +46,3 @@ class Container(containers.DeclarativeContainer):
         FileUploadService,
         base_dir=base_dir
     )
-    file_handler = providers.Factory(FileHandler)

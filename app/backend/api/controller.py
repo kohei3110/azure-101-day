@@ -13,7 +13,6 @@ from di.containers import Container
 from models.prompt_request import PromptRequest
 from services.code_interpreter_service import CodeInterpreterService
 from services.file_upload_service import FileUploadService
-from utils.file_handler import FileHandler
 from tracing.tracing import tracer
 from dependency_injector.wiring import inject, Provide
 
