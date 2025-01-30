@@ -1,5 +1,3 @@
-"""Containers module."""
-
 from pathlib import Path
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
