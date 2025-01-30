@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Optional
+from azure.ai.projects import AIProjectClient
 from azure.ai.projects.models import FilePurpose
 from repositories.file_repository import FileRepository
 from repositories.message_repository import MessageRepository
@@ -10,7 +11,8 @@ from tracing.tracing import tracer
 
 
 class CodeInterpreterService:
-    def __init__(self, file_repository: FileRepository, message_repository: MessageRepository):
+    def __init__(self, project_client: AIProjectClient, file_repository: FileRepository, message_repository: MessageRepository):
+        self.project_client = project_client
         self.file_repository = file_repository
         self.message_repository = message_repository
 
