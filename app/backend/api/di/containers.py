@@ -20,7 +20,7 @@ class Container(containers.DeclarativeContainer):
 
     project_client = providers.Singleton(
         AIProjectClient,
-        endpoint=endpoint,
+        endpoint=f"https://{endpoint}",
         subscription_id=subscription_id,
         resource_group_name=resource_group_name,
         project_name=project_name,
