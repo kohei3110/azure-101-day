@@ -1,6 +1,5 @@
 import os
 import logging
-import shutil
 from pathlib import Path
 from fastapi import FastAPI
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -10,8 +9,8 @@ from azure.identity import DefaultAzureCredential
 
 from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
 
+import controller
 from services.code_interpreter_service import CodeInterpreterService
-from . import controller
 from tracing.tracing import tracer
 from .containers import Container
 
