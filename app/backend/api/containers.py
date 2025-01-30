@@ -10,7 +10,7 @@ from services.file_upload_service import FileUploadService
 class Container(containers.DeclarativeContainer):
 
     wiring_config = containers.WiringConfiguration(
-        modules=[".controller"]
+        modules=["controller"]
     )
 
     base_dir = providers.Singleton(Path, "/")

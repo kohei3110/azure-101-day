@@ -28,20 +28,9 @@ scheduler.start()
 
 def create_app() -> FastAPI:
     container = Container()
-    container.wire(modules=["api.controller"])
+    container.wire(modules=["controller"])
 
     app = FastAPI()
-
-    @app.on_event("startup")
-    async def startup_event():
-        # 必要な初期化処理をここに追加
-        pass
-
-    @app.on_event("shutdown")
-    async def shutdown_event():
-        # 必要なクリーンアップ処理をここに追加
-        pass
-
     app.include_router(api_router)
 
     return app
