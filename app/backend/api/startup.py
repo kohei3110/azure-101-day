@@ -6,7 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from controller import router as api_router
 from tracing.tracing import tracer
-from containers import Container
+from di.containers import Container
 
 logging.basicConfig(
     level=logging.DEBUG

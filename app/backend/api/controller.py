@@ -9,7 +9,7 @@ from fastapi import (
 )
 from fastapi.responses import FileResponse
 
-from containers import Container
+from di.containers import Container
 from models.prompt_request import PromptRequest
 from services.code_interpreter_service import CodeInterpreterService
 from services.file_upload_service import FileUploadService
