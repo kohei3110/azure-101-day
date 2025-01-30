@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
@@ -13,7 +14,18 @@ class Container(containers.DeclarativeContainer):
     )
 
     base_dir = providers.Singleton(Path, "/")
-    project_client = providers.Singleton(AIProjectClient, credential=DefaultAzureCredential())
+
+    ai_project_info = os.getenv("PROJECT_CONNECTION_STRING", "")
+    endpoint, subscription_id, resource_group, project_name = ai_project_info.split(';')
+
+    project_client = providers.Singleton(
+        AIProjectClient,
+        endpoint=endpoint,
+        subscription_id=subscription_id,
+        resource_group=resource_group,
+        project_name=project_name,
+        credential=DefaultAzureCredential()
+    )
 
     code_interpreter_service = providers.Factory(
         CodeInterpreterService,
