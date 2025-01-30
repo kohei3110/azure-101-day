@@ -3,6 +3,8 @@ from pathlib import Path
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
 from dependency_injector import containers, providers
+from repositories.file_repository import FileRepository
+from repositories.message_repository import MessageRepository
 from services.code_interpreter_service import CodeInterpreterService
 from services.file_upload_service import FileUploadService
 from utils.file_handler import FileHandler
@@ -27,9 +29,20 @@ class Container(containers.DeclarativeContainer):
         credential=DefaultAzureCredential()
     )
 
+    file_handler = providers.Factory(FileHandler)
+    file_repository = providers.Factory(
+        FileRepository,
+        file_handler=file_handler
+    )
+    message_repository = providers.Factory(
+        MessageRepository,
+        project_client=project_client
+    )
+
     code_interpreter_service = providers.Factory(
         CodeInterpreterService,
-        project_client=project_client
+        file_repository=file_repository,
+        message_repository=message_repository
     )
     file_upload_service = providers.Factory(
         FileUploadService,

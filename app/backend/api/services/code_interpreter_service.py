@@ -2,17 +2,20 @@ import logging
 import os
 from typing import Optional
 from azure.ai.projects.models import FilePurpose
+from repositories.file_repository import FileRepository
+from repositories.message_repository import MessageRepository
 from tools.action.code_interpreter_tool import create_code_interpreter_tool
-from utils.file_handler import FileHandler
 from pathlib import Path
 from tracing.tracing import tracer
 
 
 class CodeInterpreterService:
-    def __init__(self, project_client):
-        self.project_client = project_client
+    def __init__(self, file_repository: FileRepository, message_repository: MessageRepository):
+        self.file_repository = file_repository
+        self.message_repository = message_repository
 
-    async def process_file_and_message(self, file, user_message: str, file_handler: FileHandler):
+
+    async def process_file_and_message(self, file, user_message: str):
         with tracer.start_as_current_span("process_file_and_message") as span:
             span.set_attributes(
                 {
@@ -20,7 +23,7 @@ class CodeInterpreterService:
                 }
             )
             destination: str = os.getenv("DATA_DIR", "/data")
-            file_location = await file_handler.save_temp_file(file, destination)
+            file_location = await self.file_repository.save_temp_file(file, destination)
             try:
                 uploaded_file = self.upload_file_to_project(file_location)
                 agent = self.create_agent(uploaded_file.id)
@@ -31,10 +34,10 @@ class CodeInterpreterService:
                 file_name = self.save_generated_images(thread.id)
                 return file_name
             finally:
-                file_handler.delete_file(file_location)
+                self.file_repository.delete_file(file_location)
                 print("Deleted file")
 
-    async def process_message_only(self, file, user_message: str, file_handler: FileHandler):
+    async def process_message_only(self, file, user_message: str):
         with tracer.start_as_current_span("process_message_only") as span:
             span.set_attributes(
                 {
@@ -42,7 +45,7 @@ class CodeInterpreterService:
                 }
             )
             destination: str = os.getenv("DATA_DIR", "/data")
-            file_location = await file_handler.save_temp_file(file, destination)
+            file_location = await self.file_repository.save_temp_file(file, destination)
             try:
                 uploaded_file = self.upload_file_to_project(file_location)
                 agent = self.create_agent(uploaded_file.id)
@@ -56,7 +59,7 @@ class CodeInterpreterService:
                 if last_msg:
                     return last_msg.text.value
             finally:
-                file_handler.delete_file(file_location)
+                self.file_repository.delete_file(file_location)
                 print("Deleted file")
 
     def upload_file_to_project(self, file_location: str):
