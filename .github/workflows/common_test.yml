@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         cd app/backend/api
-        ~/.local/bin/poetry install
+        ~/.local/bin/poetry install --no-root
 
     - name: Run tests
       run: |
