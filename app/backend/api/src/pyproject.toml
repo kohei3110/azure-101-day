@@ -19,6 +19,8 @@ aiofiles = "^24.1.0"
 azure-ai-projects = "^1.0.0b5"
 azure-identity = "^1.19.0"
 dependency-injector = "^4.45.0"
+pytest = "^8.3.4"
+httpx = "^0.28.1"
 
 
 [build-system]
