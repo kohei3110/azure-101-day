@@ -40,6 +40,11 @@ jobs:
         cd app/backend/api
         ~/.local/bin/poetry install --no-root
 
+    - name: Create data directory
+      run: |
+        sudo mkdir -p /data
+        sudo chmod -R 777 /data
+
     - name: Run tests      
       run: |
         cd app/backend/api
