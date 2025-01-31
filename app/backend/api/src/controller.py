@@ -38,10 +38,12 @@ async def upload_data(
     )
 ):
     """Upload a file to the data directory."""
-    with tracer.start_as_current_span("upload_data"):
-        filename = file_upload_service.upload_file(file, "data")
-        return {"filename": filename}
-
+    try:
+        with tracer.start_as_current_span("upload_data"):
+            filename = file_upload_service.upload_file(file, "data")
+            return {"filename": filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Dependency injection failed")
 
 @router.post("/files")
 @inject
