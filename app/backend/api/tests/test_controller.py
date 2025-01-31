@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
 import pytest
 from fastapi.testclient import TestClient
 from fastapi import UploadFile, FastAPI, Depends, HTTPException

@@ -1,0 +1,27 @@
+name: Test Backend API
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        cd app/backend/api
+        poetry install
+
+    - name: Run tests
+      run: |
+        cd app/backend/api
+        pytest tests

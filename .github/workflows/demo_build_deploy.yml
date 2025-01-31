@@ -7,7 +7,7 @@ jobs:
   build-containerapps-workflow:
     uses: ./.github/workflows/common_container_image_build_push.yml
     with:
-      WORKING_DIRECTORY_API: app/backend/api/src
+      WORKING_DIRECTORY_API: app/backend/api
       WORKING_DIRECTORY_OTELCOLLECTOR: app/backend/opentelemetry
       WORKING_DIRECTORY_SLM: app/backend/slm
       ACR: crazure101daydemoce001.azurecr.io
@@ -24,7 +24,7 @@ jobs:
     needs: build-containerapps-workflow
     uses: ./.github/workflows/common_containerapps_deploy.yml
     with:
-      WORKING_DIRECTORY: app/backend/api/src
+      WORKING_DIRECTORY: app/backend/api
       ACR: crazure101daydemoce001.azurecr.io
       IMAGE_NAME_API: sample
       IMAGE_NAME_OTELCOLLECTOR: otel-collector
@@ -47,7 +47,7 @@ jobs:
     uses: ./.github/workflows/common_webappforcontainers_deploy.yml
     with:
       AZURE_WEBAPP_NAME: app-azure101day-demo-ce-002
-      WORKING_DIRECTORY: app/backend/api/src
+      WORKING_DIRECTORY: app/backend/api
       ACR: crazure101daydemoce001.azurecr.io
       IMAGE_NAME_API: sample
       IMAGE_NAME_OTELCOLLECTOR: otel-collector
