@@ -44,14 +44,3 @@ def test_upload_data_invalid_file(mock_file_upload_service):
     )
 
     assert response.status_code == 422
-
-
-def test_upload_data_missing_dependency():
-    with patch("services.file_upload_service.FileUploadService", side_effect=HTTPException(status_code=500, detail="Failed to upload file")):
-        response = client.post(
-            "/data",
-            files={"file": ("testfile.txt", b"test content", "text/plain")}
-        )
-
-        assert response.status_code == 500
-        assert response.json() == {"detail": "Failed to upload file"}

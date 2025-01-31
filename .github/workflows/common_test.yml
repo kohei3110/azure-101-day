@@ -49,3 +49,4 @@ jobs:
       run: |
         cd app/backend/api
         ~/.local/bin/poetry run pytest tests
+        ~/.local/bin/poetry run pytest --cov=services --cov-report=term-missing
