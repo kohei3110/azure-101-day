@@ -35,3 +35,12 @@ def test_upload_data_success(mock_file_upload_service):
 
     assert response.status_code == 200
     assert response.json() == {"filename": "testfile.txt"}
+
+
+def test_upload_data_invalid_file(mock_file_upload_service):
+    response = client.post(
+        "/data",
+        files={"file": ("", b"", "text/plain")}
+    )
+
+    assert response.status_code == 422
