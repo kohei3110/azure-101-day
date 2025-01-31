@@ -47,8 +47,7 @@ def test_upload_data_invalid_file(mock_file_upload_service):
 
 
 def test_upload_data_missing_dependency():
-    with patch("di.containers.Container.file_upload_service", side_effect=HTTPException(status_code=500, detail="Failed to upload file")) as mock_service:
-        print(mock_service)
+    with patch("FileUploadService", side_effect=HTTPException(status_code=500, detail="Failed to upload file")):
         response = client.post(
             "/data",
             files={"file": ("testfile.txt", b"test content", "text/plain")}
