@@ -19,11 +19,8 @@ client = TestClient(app)
 
 @pytest.fixture
 def mock_file_upload_service():
-    with patch("services.file_upload_service.FileUploadService") as MockService:
-        mock_service = MockService.return_value
-        mock_service.base_dir = Path("/mock/base/dir")
-        mock_service.upload_file = AsyncMock(return_value="testfile.txt")
-        yield mock_service
+    base_dir = Path("/mock/base/dir")
+    return FileUploadService(base_dir)
 
 
 def test_upload_data_success(mock_file_upload_service):
@@ -60,7 +57,8 @@ async def test_upload_file_creates_target_dir(mock_file_upload_service):
     with patch.object(target_dir, 'exists', return_value=False):
         with patch.object(target_dir, 'mkdir') as mock_mkdir:
             # Act
-            await mock_file_upload_service.upload_file(mock_file, sub_dir)
+            result = mock_file_upload_service.upload_file(mock_file, sub_dir)
 
             # Assert
             mock_mkdir.assert_called_once_with(parents=True, exist_ok=True)
+            assert result == "test.txt"
