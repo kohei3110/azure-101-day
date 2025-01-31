@@ -47,7 +47,8 @@ def test_upload_data_invalid_file(mock_file_upload_service):
 
     assert response.status_code == 422
 
-def test_upload_file_creates_target_dir(mock_file_upload_service):
+@pytest.mark.asyncio
+async def test_upload_file_creates_target_dir(mock_file_upload_service):
     # Arrange
     mock_file = MagicMock(spec=UploadFile)
     mock_file.filename = "test.txt"
@@ -56,7 +57,7 @@ def test_upload_file_creates_target_dir(mock_file_upload_service):
     target_dir = mock_file_upload_service.base_dir / sub_dir
 
     # Act
-    mock_file_upload_service.upload_file(mock_file, sub_dir)
+    await mock_file_upload_service.upload_file(mock_file, sub_dir)
 
     # Assert
     target_dir.mkdir.assert_called_once_with(parents=True, exist_ok=True)
