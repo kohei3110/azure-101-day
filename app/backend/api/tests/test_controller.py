@@ -56,8 +56,11 @@ async def test_upload_file_creates_target_dir(mock_file_upload_service):
     sub_dir = "subdir"
     target_dir = mock_file_upload_service.base_dir / sub_dir
 
-    # Act
-    await mock_file_upload_service.upload_file(mock_file, sub_dir)
+    # Mock the target_dir.exists method to return False
+    with patch.object(target_dir, 'exists', return_value=False):
+        with patch.object(target_dir, 'mkdir') as mock_mkdir:
+            # Act
+            await mock_file_upload_service.upload_file(mock_file, sub_dir)
 
-    # Assert
-    target_dir.mkdir.assert_called_once_with(parents=True, exist_ok=True)
+            # Assert
+            mock_mkdir.assert_called_once_with(parents=True, exist_ok=True)
