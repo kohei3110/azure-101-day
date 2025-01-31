@@ -16,12 +16,16 @@ jobs:
       with:
         python-version: '3.12'
 
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+
     - name: Install dependencies
       run: |
         cd app/backend/api
-        poetry install
+        ~/.local/bin/poetry install
 
     - name: Run tests
       run: |
         cd app/backend/api
-        pytest tests
+        ~/.local/bin/poetry run pytest tests
