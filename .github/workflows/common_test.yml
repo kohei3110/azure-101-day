@@ -1,11 +1,17 @@
 name: Test Backend API
 
 on:
-  push:
+  workflow_call:
+    secrets:
+      PROJECT_CONNECTION_STRING:
+        required: true  
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    env:
+      PROJECT_CONNECTION_STRING: ${{ secrets.PROJECT_CONNECTION_STRING }}
 
     steps:
     - name: Checkout code
@@ -25,7 +31,7 @@ jobs:
         cd app/backend/api
         ~/.local/bin/poetry install --no-root
 
-    - name: Run tests
+    - name: Run tests      
       run: |
         cd app/backend/api
         ~/.local/bin/poetry run pytest tests
