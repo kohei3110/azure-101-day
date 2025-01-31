@@ -55,4 +55,4 @@ def test_upload_data_missing_dependency():
         )
 
         assert response.status_code == 500
-        assert response.json() == {"detail": "Dependency injection failed"}
+        assert response.json() == {"detail": "Failed to upload file"}
