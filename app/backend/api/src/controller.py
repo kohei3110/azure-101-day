@@ -26,10 +26,6 @@ DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 FILE_DIR = Path(os.getenv("FILE_DIR", "/files"))
 
 
-def get_file_upload_service() -> FileUploadService:
-    return FileUploadService(base_dir=Path("/"))
-
-
 @router.post("/data")
 @inject
 async def upload_data(
