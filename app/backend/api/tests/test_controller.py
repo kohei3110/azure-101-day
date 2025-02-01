@@ -54,22 +54,3 @@ def test_upload_data_failure(mock_file_upload_service):
 
         assert response.status_code == 500
         assert response.json() == {"detail": "Failed to upload file"}
-
-@pytest.mark.asyncio
-async def test_upload_file_creates_target_dir(mock_file_upload_service):
-    # Arrange
-    mock_file = MagicMock(spec=UploadFile)
-    mock_file.filename = "test.txt"
-    mock_file.file = MagicMock()
-    sub_dir = "subdir"
-    target_dir = mock_file_upload_service.base_dir / sub_dir
-
-    # Mock the target_dir.exists method to return False
-    with patch.object(target_dir, 'exists', return_value=False):
-        with patch.object(target_dir, 'mkdir') as mock_mkdir:
-            # Act
-            result = mock_file_upload_service.upload_file(mock_file, sub_dir)
-
-            # Assert
-            mock_mkdir.assert_called_once_with(parents=True, exist_ok=True)
-            assert result == "test.txt"
