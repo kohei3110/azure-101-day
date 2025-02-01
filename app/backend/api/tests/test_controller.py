@@ -44,6 +44,17 @@ def test_upload_data_invalid_file(mock_file_upload_service):
 
     assert response.status_code == 422
 
+
+def test_upload_data_failure(mock_file_upload_service):
+    file_content = b"test content"
+    file = UploadFile(filename="testfile.txt", file=file_content)
+
+    with patch.object(mock_file_upload_service, 'upload_file', side_effect=Exception("Upload failed")):
+        response = client.post("/data", files={"file": file})
+
+        assert response.status_code == 500
+        assert response.json() == {"detail": "Failed to upload file"}
+
 @pytest.mark.asyncio
 async def test_upload_file_creates_target_dir(mock_file_upload_service):
     # Arrange
