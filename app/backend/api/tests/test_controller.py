@@ -158,7 +158,7 @@ def test_post_code_interpreter_異常系(tmp_result_file: Path):
     assert response.json() == {"detail": "Failed to interpret code"}
 
 
-def test_post_slm():
+def test_post_slm_正常系():
     with patch.object(SidecarService, "post_slm", return_value={"message": "test message"}):
         response = client.post(
             "/slm",
@@ -167,3 +167,14 @@ def test_post_slm():
         
         assert response.status_code == 200
         assert response.json() == {"message": "test message"}
+
+
+def test_post_slm_異常系():
+    with patch.object(SidecarService, "post_slm", side_effect=Exception("SLM failed")):
+        response = client.post(
+            "/slm",
+            json={"prompt": "今日は寒いですね。"}
+        )
+        
+        assert response.status_code == 500
+        assert response.json() == {"detail": "Failed to generate text"}
