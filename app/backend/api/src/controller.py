@@ -53,9 +53,13 @@ async def upload_files(
     )
 ):
     """Upload a file to the data directory."""
-    with tracer.start_as_current_span("upload_files"):
-        filename = file_upload_service.upload_file(file, "files")
-        return {"filename": filename}
+    try:
+        with tracer.start_as_current_span("upload_files"):
+            filename = file_upload_service.upload_file(file, "files")
+            return {"filename": filename}
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=500, detail="Failed to upload file")
         
 
 @router.post("/code_interpreter")
