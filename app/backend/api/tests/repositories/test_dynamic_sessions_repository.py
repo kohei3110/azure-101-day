@@ -18,7 +18,7 @@ class TestDynamicSessionsRepository(unittest.TestCase):
         self.code = "print('Hello, World!')"
 
 
-    @patch("dynamic_sessions_repository.requests.post")
+    @patch("repositories.dynamic_sessions_repository.requests.post")
     def test_upload_file(self, mock_post):
         mock_response = MagicMock()
         mock_response.raise_for_status = MagicMock()
@@ -32,7 +32,7 @@ class TestDynamicSessionsRepository(unittest.TestCase):
         self.assertIn("file", kwargs["files"])
 
 
-    @patch("dynamic_sessions_repository.requests.post")
+    @patch("repositories.dynamic_sessions_repository.requests.post")
     def test_execute_code(self, mock_post):
         mock_response = MagicMock()
         mock_response.raise_for_status = MagicMock()
