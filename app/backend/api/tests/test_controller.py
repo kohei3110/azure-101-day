@@ -1,3 +1,4 @@
+from io import BytesIO
 from pathlib import Path
 import sys
 import os
@@ -46,10 +47,13 @@ def test_upload_data_invalid_file(mock_file_upload_service):
 
 
 def test_upload_data_failure(mock_file_upload_service):
-    with patch.object(mock_file_upload_service, "upload_file", side_effect=Exception):
+    file_content = b"test content"
+    file = UploadFile(filename="testfile.txt", file=BytesIO(file_content))
+
+    with patch.object(FileUploadService, 'upload_file', side_effect=Exception("Upload failed")):
         response = client.post(
             "/data",
-            files={"file": ("testfile.txt", b"test content", "text/plain")}
+            files={"file": ("testfile.txt", file_content, "text/plain")}
         )
 
     assert response.status_code == 500
