@@ -27,11 +27,10 @@ def mock_file_upload_service():
 
 
 @pytest.fixture
-def mock_code_interpreter_service():
-    project_client = MagicMock()
-    file_repository = MagicMock()
-    message_repository = MagicMock()
-    return CodeInterpreterService(project_client, file_repository, message_repository)
+def tmp_result_file(tmp_path: Path) -> Path:
+    file_path = tmp_path / "result.txt"
+    file_path.write_text("Result content")
+    return file_path
 
 
 def test_upload_data_正常系(mock_file_upload_service):
@@ -106,14 +105,19 @@ def test_upload_files_サービス層で例外(mock_file_upload_service):
     assert response.json() == {"detail": "Failed to upload file"}
 
 
-def test_post_code_interpreter_正常系(mock_code_interpreter_service):
+def test_post_code_interpreter_正常系(tmp_result_file: Path):
+    message = "test message"
     file_content = b"test content"
-    file = UploadFile(filename="testfile.txt", file=file_content)
-
-    response = client.post(
-        "/code_interpreter",
-        files={"file": ("testfile.txt", file_content, "text/plain")},
-        data={"message": "test message"}
-    )
-
+    
+    with patch.object(CodeInterpreterService, "process_file_and_message", new_callable=AsyncMock) as mock_process:
+        mock_process.return_value = str(tmp_result_file)
+        
+        response = client.post(
+            "/code_interpreter",
+            files={"file": ("testfile.txt", BytesIO(file_content), "text/plain")},
+            data={"message": message}
+        )
+    
     assert response.status_code == 200
+    disposition = response.headers.get("content-disposition", "")
+    assert "result.txt" in disposition
