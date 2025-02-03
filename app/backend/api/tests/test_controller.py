@@ -146,7 +146,7 @@ def test_post_code_interpreter_異常系(tmp_result_file: Path):
 def test_post_slm():
     response = client.post(
         "/slm",
-        json={"message": "test message"}
+        json= {"prompt": "今日は寒いですね。"}
     )
     
     assert response.status_code == 200
