@@ -117,7 +117,7 @@ def post_slm(
                     "gen_ai.request.model": "phi4",
                 }
             )
-            result = sidecar_service.post_slm(request_data.get("prompt"))
+            result = sidecar_service.post_slm(request_data.prompt)
             return result
     except Exception as e:
         logging.error(e)
