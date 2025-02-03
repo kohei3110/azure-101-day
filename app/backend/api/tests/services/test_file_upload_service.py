@@ -2,6 +2,7 @@ from io import BytesIO
 from pathlib import Path
 import sys
 import os
+from unittest.mock import patch
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'src')))
 
@@ -11,6 +12,7 @@ from io import BytesIO
 import pytest
 from fastapi import UploadFile
 from services.file_upload_service import FileUploadService
+
 
 def test_upload_file_正常系(tmp_path: Path):
     # Arrange: create a temporary base directory for uploads
@@ -36,3 +38,21 @@ def test_upload_file_正常系(tmp_path: Path):
     # Verify the content of the written file
     with open(target_file_path, "rb") as f:
         assert f.read() == file_content
+
+
+def test_upload_file_異常系(tmp_path: Path):
+    # Arrange: create a temporary base directory for uploads
+    base_dir = tmp_path / "hoge"
+    service = FileUploadService(base_dir)
+    
+    file_content = b"sample file content"
+    filename = "testfile.txt"
+    file_stream = BytesIO(file_content)
+    upload_file = UploadFile(filename=filename, file=file_stream)
+
+    # Act & Assert: patching shutil.copyfileobj to raise an exception simulating a failure during file copy
+    with patch("services.file_upload_service.shutil.copyfileobj", side_effect=Exception("Copy failed")):
+        with pytest.raises(Exception) as exc_info:
+            service.upload_file(upload_file, "data")
+    
+    assert "Copy failed" in str(exc_info.value)
