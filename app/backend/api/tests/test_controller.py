@@ -197,3 +197,18 @@ def test_post_dynamic_sessions_正常系():
     
     assert response.status_code == 200
     assert response.json() == {"session_id": "dummy-session-id"}
+
+
+def test_post_dynamic_sessions_異常系():
+    file_content = b"test content"
+    message = "test message"
+    # 依存先のcode_interpreter_serviceは通常の処理で返す値にしておき、DynamicSessionsServiceだけをpatch
+    with patch("services.dynamic_sessions_service.DynamicSessionsService.process_dynamic_session", side_effect=Exception("Dynamic session failed")):
+        response = client.post(
+            "/dynamic_sessions",
+            files={"file": ("testfile.txt", BytesIO(file_content), "text/plain")},
+            data={"message": message}
+        )
+    
+    assert response.status_code == 500
+    assert response.json() == {"detail": "Failed to process dynamic session"}
