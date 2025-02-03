@@ -100,6 +100,7 @@ async def post_code_interpreter(
 
 
 @router.post("/slm")
+@inject
 def post_slm(
     request_data: PromptRequest,
     sidecar_service: SidecarService = Depends(
