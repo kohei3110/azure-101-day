@@ -159,10 +159,10 @@ def test_post_code_interpreter_異常系(tmp_result_file: Path):
 
 
 def test_post_slm():
-    with patch.object(SidecarService, "post_slm", new_callable=AsyncMock) as mock_process:
+    with patch.object(SidecarService, "post_slm", return_value={"message": "test message"}):
         response = client.post(
             "/slm",
-            json= {"prompt": "今日は寒いですね。"}
+            json={"prompt": "今日は寒いですね。"}
         )
         
         assert response.status_code == 200
