@@ -24,7 +24,7 @@ def mock_file_upload_service():
     return FileUploadService(base_dir)
 
 
-def test_upload_data_success(mock_file_upload_service):
+def test_upload_data_success_dataディレクトリ(mock_file_upload_service):
     file_content = b"test content"
     file = UploadFile(filename="testfile.txt", file=file_content)
 
@@ -37,7 +37,7 @@ def test_upload_data_success(mock_file_upload_service):
     assert response.json() == {"filename": "testfile.txt"}
 
 
-def test_upload_data_invalid_file(mock_file_upload_service):
+def test_upload_data_invalid_file_dataディレクトリ(mock_file_upload_service):
     response = client.post(
         "/data",
         files={"file": ("", b"", "text/plain")}
@@ -46,13 +46,49 @@ def test_upload_data_invalid_file(mock_file_upload_service):
     assert response.status_code == 422
 
 
-def test_upload_data_failure(mock_file_upload_service):
+def test_upload_data_failure_dataディレクトリ(mock_file_upload_service):
     file_content = b"test content"
     file = UploadFile(filename="testfile.txt", file=BytesIO(file_content))
 
     with patch.object(FileUploadService, 'upload_file', side_effect=Exception("Upload failed")):
         response = client.post(
             "/data",
+            files={"file": ("testfile.txt", file_content, "text/plain")}
+        )
+
+    assert response.status_code == 500
+    assert response.json() == {"detail": "Failed to upload file"}
+
+
+def test_upload_data_success_filesディレクトリ(mock_file_upload_service):
+    file_content = b"test content"
+    file = UploadFile(filename="testfile.txt", file=file_content)
+
+    response = client.post(
+        "/files",
+        files={"file": ("testfile.txt", file_content, "text/plain")}
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"filename": "testfile.txt"}
+
+
+def test_upload_data_invalid_filesディレクトリ(mock_file_upload_service):
+    response = client.post(
+        "/files",
+        files={"file": ("", b"", "text/plain")}
+    )
+
+    assert response.status_code == 422
+
+
+def test_upload_data_failure_filesディレクトリ(mock_file_upload_service):
+    file_content = b"test content"
+    file = UploadFile(filename="testfile.txt", file=BytesIO(file_content))
+
+    with patch.object(FileUploadService, 'upload_file', side_effect=Exception("Upload failed")):
+        response = client.post(
+            "/files",
             files={"file": ("testfile.txt", file_content, "text/plain")}
         )
 
