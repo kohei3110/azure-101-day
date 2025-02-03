@@ -1,3 +1,4 @@
+import logging
 import shutil
 from pathlib import Path
 from fastapi import UploadFile
@@ -11,6 +12,10 @@ class FileUploadService:
         if not target_dir.exists():
             target_dir.mkdir(parents=True, exist_ok=True)
         save_path: Path = target_dir / file.filename
-        with open(save_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        try:
+            with open(save_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+        except Exception as e:
+            logging.error(e)
+            raise Exception(e)
         return file.filename
