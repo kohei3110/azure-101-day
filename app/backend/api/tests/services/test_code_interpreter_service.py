@@ -53,6 +53,7 @@ class TestCodeInterpreterServiceHandleRunCompletion(unittest.TestCase):
         # Create a dummy run with failed status and an error message
         dummy_run = MagicMock()
         dummy_run.status = "failed"  # Normal case, not failed.
+        dummy_run.last_error = "Simulated failure"
         thread_id = "dummy-thread-id"
         file_id = "dummy-file-id"
 
