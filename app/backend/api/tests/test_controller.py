@@ -141,3 +141,13 @@ def test_post_code_interpreter_異常系(tmp_result_file: Path):
     
     assert response.status_code == 500
     assert response.json() == {"detail": "Failed to interpret code"}
+
+
+def test_post_slm():
+    response = client.post(
+        "/slm",
+        json={"message": "test message"}
+    )
+    
+    assert response.status_code == 200
+    assert response.json() == {"message": "test message"}

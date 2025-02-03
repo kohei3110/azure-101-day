@@ -100,26 +100,30 @@ async def post_code_interpreter(
 
 @router.post("/slm")
 def post_slm(request_data: PromptRequest):
-    with tracer.start_as_current_span("post_slm") as parent:
-        parent.set_attributes(
-            {
-                "span_type": "GenAI",
-                "gen_ai.operation.name": "chat",
-                "gen_ai.system": "_OTHER",
-                "gen_ai.request.model": "phi4",
-            }
-        )
-        response = requests.post(
-            os.getenv("SIDECAR_SLM_URL", "http://localhost:11434/api/generate"),
-            json={
-                "model": "phi3",
-                "prompt": request_data.prompt,
-                "stream": False
-            },
-            headers={"Content-Type": "application/json"}
-        )
-        return response.json()
-
+    try:
+        with tracer.start_as_current_span("post_slm") as parent:
+            parent.set_attributes(
+                {
+                    "span_type": "GenAI",
+                    "gen_ai.operation.name": "chat",
+                    "gen_ai.system": "_OTHER",
+                    "gen_ai.request.model": "phi4",
+                }
+            )
+            response = requests.post(
+                os.getenv("SIDECAR_SLM_URL", "http://localhost:11434/api/generate"),
+                json={
+                    "model": "phi3",
+                    "prompt": request_data.prompt,
+                    "stream": False
+                },
+                headers={"Content-Type": "application/json"}
+            )
+            return response.json()
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=500, detail="Failed to generate text")
+    
 
 @router.post("/dynamic_sessions")
 @inject
