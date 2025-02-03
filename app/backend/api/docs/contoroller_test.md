@@ -7,3 +7,5 @@ graph TD
     A --> E[Call upload_data with invalid file]
     E --> F[File upload failed]
     F --> G[Return error message]
+
+```

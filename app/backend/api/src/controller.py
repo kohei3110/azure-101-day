@@ -71,27 +71,31 @@ async def post_code_interpreter(
         Provide[Container.code_interpreter_service]
     )
 ):
-    with tracer.start_as_current_span("post_code_interpreter") as parent:
-        parent.set_attributes(
-            {
-                "span_type": "GenAI",
-                "inputs": {
-                    "messages": [
-                        {
-                            "content": message
-                        }
-                    ]
-                },
-                "gen_ai.operation.name": "chat",
-                "gen_ai.system": "az.ai.inference",
-                "gen_ai.request.model": "gpt-4o",
-            }
-        )
-        user_message = message
-        file_name = await code_interpreter_service.process_file_and_message(
-            file, user_message
-        )
-        return FileResponse(path=file_name, filename=file_name)
+    try:
+        with tracer.start_as_current_span("post_code_interpreter") as parent:
+            parent.set_attributes(
+                {
+                    "span_type": "GenAI",
+                    "inputs": {
+                        "messages": [
+                            {
+                                "content": message
+                            }
+                        ]
+                    },
+                    "gen_ai.operation.name": "chat",
+                    "gen_ai.system": "az.ai.inference",
+                    "gen_ai.request.model": "gpt-4o",
+                }
+            )
+            user_message = message
+            file_name = await code_interpreter_service.process_file_and_message(
+                file, user_message
+            )
+            return FileResponse(path=file_name, filename=file_name)
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=500, detail="Failed to interpret code")
 
 
 @router.post("/slm")

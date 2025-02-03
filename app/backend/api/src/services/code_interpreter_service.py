@@ -35,6 +35,9 @@ class CodeInterpreterService:
                 self.handle_run_completion(run, thread.id, uploaded_file.id)
                 file_name = self.save_generated_images(thread.id)
                 return file_name
+            except Exception as e:
+                logging.error(e)
+                raise Exception(e)
             finally:
                 self.file_repository.delete_file(file_location)
                 print("Deleted file")
