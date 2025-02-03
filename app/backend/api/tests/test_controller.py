@@ -66,7 +66,7 @@ def test_upload_data_ファイルがない(mock_file_upload_service):
         "/data",
         files={"file": ("", b"", "text/plain")}
     )
-
+    print("demo")
     assert response.status_code == 422
 
 
