@@ -45,6 +45,11 @@ jobs:
         sudo mkdir -p /data
         sudo chmod -R 777 /data
 
+    - name: Create files directory
+      run: |
+        sudo mkdir -p /files
+        sudo chmod -R 777 /files
+  
     - name: Run tests      
       run: |
         cd app/backend/api
