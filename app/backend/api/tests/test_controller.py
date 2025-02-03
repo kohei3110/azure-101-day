@@ -121,3 +121,23 @@ def test_post_code_interpreter_正常系(tmp_result_file: Path):
     assert response.status_code == 200
     disposition = response.headers.get("content-disposition", "")
     assert "result.txt" in disposition
+
+
+def test_post_code_interpreter_異常系(tmp_result_file: Path):
+    message = "test message"
+    file_content = b"test content"
+    
+    with patch.object(
+        CodeInterpreterService, 
+        "process_file_and_message", 
+        new_callable=AsyncMock, 
+        side_effect=Exception("Interpretation failed")
+    ):
+        response = client.post(
+            "/code_interpreter",
+            files={"file": ("testfile.txt", BytesIO(file_content), "text/plain")},
+            data={"message": message}
+        )
+    
+    assert response.status_code == 500
+    assert response.json() == {"detail": "Failed to interpret code"}
