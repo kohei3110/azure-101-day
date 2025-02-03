@@ -17,6 +17,20 @@ from services.sidecar_service import SidecarService
 from dependency_injector.wiring import Provide, inject
 from di.containers import Container
 
+
+# テスト用のダミー実装
+class DummySidecarService:
+    def post_slm(self, prompt: str) -> dict:
+        return {"message": "dummy response"}
+
+# DIのオーバーライドを行うフィクスチャ
+@pytest.fixture(autouse=True)
+def override_sidecar_service():
+    Container.sidecar_service.override(DummySidecarService())
+    yield
+    Container.sidecar_service.reset_override()
+
+
 app = create_app()
 client = TestClient(app)
 
