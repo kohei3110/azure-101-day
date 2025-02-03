@@ -7,6 +7,7 @@ from repositories.file_repository import FileRepository
 from repositories.message_repository import MessageRepository
 from services.code_interpreter_service import CodeInterpreterService
 from services.file_upload_service import FileUploadService
+from services.sidecar_service import SidecarService
 
 class Container(containers.DeclarativeContainer):
 
@@ -45,3 +46,4 @@ class Container(containers.DeclarativeContainer):
         FileUploadService,
         base_dir=base_dir
     )
+    sidecar_service = providers.Factory(SidecarService)

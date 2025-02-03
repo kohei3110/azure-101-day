@@ -12,6 +12,7 @@ from fastapi.responses import FileResponse
 
 from di.containers import Container
 from models.prompt_request import PromptRequest
+from services.sidecar_service import SidecarService
 from services.code_interpreter_service import CodeInterpreterService
 from services.file_upload_service import FileUploadService
 from tracing.tracing import tracer
@@ -99,7 +100,12 @@ async def post_code_interpreter(
 
 
 @router.post("/slm")
-def post_slm(request_data: PromptRequest):
+def post_slm(
+    request_data: PromptRequest,
+    sidecar_service: SidecarService = Depends(
+        Provide[Container.sidecar_service]
+    )
+):
     try:
         with tracer.start_as_current_span("post_slm") as parent:
             parent.set_attributes(
@@ -110,16 +116,8 @@ def post_slm(request_data: PromptRequest):
                     "gen_ai.request.model": "phi4",
                 }
             )
-            response = requests.post(
-                os.getenv("SIDECAR_SLM_URL", "http://localhost:11434/api/generate"),
-                json={
-                    "model": "phi3",
-                    "prompt": request_data.prompt,
-                    "stream": False
-                },
-                headers={"Content-Type": "application/json"}
-            )
-            return response.json()
+            result = sidecar_service.post_slm(request_data.get("prompt"))
+            return result
     except Exception as e:
         logging.error(e)
         raise HTTPException(status_code=500, detail="Failed to generate text")

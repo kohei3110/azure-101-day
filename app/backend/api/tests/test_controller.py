@@ -13,6 +13,7 @@ from startup import create_app
 from controller import upload_data
 from services.file_upload_service import FileUploadService
 from services.code_interpreter_service import CodeInterpreterService
+from services.sidecar_service import SidecarService
 from dependency_injector.wiring import Provide, inject
 from di.containers import Container
 
@@ -144,10 +145,11 @@ def test_post_code_interpreter_異常系(tmp_result_file: Path):
 
 
 def test_post_slm():
-    response = client.post(
-        "/slm",
-        json= {"prompt": "今日は寒いですね。"}
-    )
-    
-    assert response.status_code == 200
-    assert response.json() == {"message": "test message"}
+    with patch.object(SidecarService, "post_slm", new_callable=AsyncMock) as mock_process:
+        response = client.post(
+            "/slm",
+            json= {"prompt": "今日は寒いですね。"}
+        )
+        
+        assert response.status_code == 200
+        assert response.json() == {"message": "test message"}
