@@ -3,7 +3,6 @@ from pathlib import Path
 import sys
 import os
 
-from services.code_interpreter_service import CodeInterpreterService
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
 import pytest
@@ -13,6 +12,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from startup import create_app
 from controller import upload_data
 from services.file_upload_service import FileUploadService
+from services.code_interpreter_service import CodeInterpreterService
 from dependency_injector.wiring import Provide, inject
 from di.containers import Container
 
