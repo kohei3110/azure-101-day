@@ -1,18 +1,23 @@
 import logging
 import os
 from typing import Optional
+from azure.ai.projects import AIProjectClient
 from azure.ai.projects.models import FilePurpose
+from repositories.file_repository import FileRepository
+from repositories.message_repository import MessageRepository
 from tools.action.code_interpreter_tool import create_code_interpreter_tool
-from utils.file_handler import FileHandler
 from pathlib import Path
 from tracing.tracing import tracer
 
 
 class CodeInterpreterService:
-    def __init__(self, project_client):
+    def __init__(self, project_client: AIProjectClient, file_repository: FileRepository, message_repository: MessageRepository):
         self.project_client = project_client
+        self.file_repository = file_repository
+        self.message_repository = message_repository
 
-    async def process_file_and_message(self, file, user_message: str, file_handler: FileHandler):
+
+    async def process_file_and_message(self, file, user_message: str):
         with tracer.start_as_current_span("process_file_and_message") as span:
             span.set_attributes(
                 {
@@ -20,7 +25,7 @@ class CodeInterpreterService:
                 }
             )
             destination: str = os.getenv("DATA_DIR", "/data")
-            file_location = await file_handler.save_temp_file(file, destination)
+            file_location = await self.file_repository.save_temp_file(file, destination)
             try:
                 uploaded_file = self.upload_file_to_project(file_location)
                 agent = self.create_agent(uploaded_file.id)
@@ -30,11 +35,14 @@ class CodeInterpreterService:
                 self.handle_run_completion(run, thread.id, uploaded_file.id)
                 file_name = self.save_generated_images(thread.id)
                 return file_name
+            except Exception as e:
+                logging.error(e)
+                raise Exception(e)
             finally:
-                file_handler.delete_file(file_location)
+                self.file_repository.delete_file(file_location)
                 print("Deleted file")
 
-    async def process_message_only(self, file, user_message: str, file_handler: FileHandler):
+    async def process_message_only(self, file, user_message: str):
         with tracer.start_as_current_span("process_message_only") as span:
             span.set_attributes(
                 {
@@ -42,7 +50,7 @@ class CodeInterpreterService:
                 }
             )
             destination: str = os.getenv("DATA_DIR", "/data")
-            file_location = await file_handler.save_temp_file(file, destination)
+            file_location = await self.file_repository.save_temp_file(file, destination)
             try:
                 uploaded_file = self.upload_file_to_project(file_location)
                 agent = self.create_agent(uploaded_file.id)
@@ -56,7 +64,7 @@ class CodeInterpreterService:
                 if last_msg:
                     return last_msg.text.value
             finally:
-                file_handler.delete_file(file_location)
+                self.file_repository.delete_file(file_location)
                 print("Deleted file")
 
     def upload_file_to_project(self, file_location: str):
@@ -116,12 +124,15 @@ class CodeInterpreterService:
             if last_msg:
                 logging.info(f"Last Message: {last_msg.text.value}")
 
+            file_name = None
             for image_content in messages.image_contents:
                 logging.info(f"Image File ID: {image_content.image_file.file_id}")
                 file_name = f"{image_content.image_file.file_id}_image_file.png"
                 self.project_client.agents.save_file(file_id=image_content.image_file.file_id, file_name=file_name)
                 logging.info(f"Saved image file to: {Path.cwd() / file_name}")
 
+            if file_name is None:
+                raise Exception("No generated images found.")
             return file_name
         
     def get_generated_code(self, thread_id: str):

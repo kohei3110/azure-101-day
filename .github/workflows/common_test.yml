@@ -1,0 +1,63 @@
+name: Test Backend API
+
+on:
+  workflow_call:
+    secrets:
+      PROJECT_CONNECTION_STRING:
+        required: true
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_CLIENT_SECRET:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
+  
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_CONNECTION_STRING: ${{ secrets.PROJECT_CONNECTION_STRING }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+
+    - name: Install dependencies
+      run: |
+        cd app/backend/api
+        ~/.local/bin/poetry install --no-root
+
+    - name: Create data directory
+      run: |
+        sudo mkdir -p /data
+        sudo chmod -R 777 /data
+
+    - name: Create files directory
+      run: |
+        sudo mkdir -p /files
+        sudo chmod -R 777 /files
+  
+    - name: Run tests      
+      run: |
+        cd app/backend/api
+        ~/.local/bin/poetry run pytest tests
+        ~/.local/bin/poetry run pytest --cov=src --cov-report=xml
+
+    - name: Upload coverage reports to Codecov with GitHub Action
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: kohei3110/azure-101-day

@@ -4,7 +4,16 @@ on:
   push:
 
 jobs:
+  test-workflow:
+    uses: ./.github/workflows/common_test.yml
+    secrets:
+      PROJECT_CONNECTION_STRING: ${{ secrets.PROJECT_CONNECTION_STRING }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
   build-containerapps-workflow:
+    needs: test-workflow
     uses: ./.github/workflows/common_container_image_build_push.yml
     with:
       WORKING_DIRECTORY_API: app/backend/api

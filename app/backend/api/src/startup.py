@@ -1,23 +1,16 @@
 import os
 import logging
-import shutil
 from pathlib import Path
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from azure.ai.projects import AIProjectClient
-from azure.identity import DefaultAzureCredential
-
-from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
-
-from services.code_interpreter_service import CodeInterpreterService
+from controller import router as api_router
 from tracing.tracing import tracer
+from di.containers import Container
 
 logging.basicConfig(
     level=logging.DEBUG
 )
-
-app = FastAPI()
 
 DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 
@@ -33,11 +26,11 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(delete_files, 'interval', seconds=30)
 scheduler.start()
 
-project_client: AIProjectClient = AIProjectClient.from_connection_string(
-    credential=DefaultAzureCredential(), conn_str=os.environ["PROJECT_CONNECTION_STRING"]
-)
+def create_app() -> FastAPI:
+    container = Container()
+    container.wire(modules=["controller"])
 
-code_interpreter_service = CodeInterpreterService(project_client)
+    app = FastAPI()
+    app.include_router(api_router)
 
-import controller
-app.include_router(controller.router)
+    return app
