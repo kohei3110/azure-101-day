@@ -85,7 +85,7 @@ class TestCodeInterpreterServiceHandleRunCompletion(unittest.TestCase):
 
     @patch("services.code_interpreter_service.tracer", return_value=DummyTracerSpan())
     @patch("services.code_interpreter_service.logging")
-    def test_save_generated_images_normal(self, mock_logging, mock_tracer):
+    def test_save_generated_images_画像が生成される(self, mock_logging, mock_tracer):
         thread_id = "dummy-thread-id"
         expected_file_name = "test_id_image_file.png"
 
@@ -102,6 +102,23 @@ class TestCodeInterpreterServiceHandleRunCompletion(unittest.TestCase):
         # Confirm that the file was saved to the expected location (logged)
         saved_path = Path.cwd() / expected_file_name
         mock_logging.info.assert_any_call(f"Saved image file to: {saved_path}")
+
+
+    @patch("services.code_interpreter_service.tracer", return_value=DummyTracerSpan())
+    @patch("services.code_interpreter_service.logging")
+    def test_save_generated_images_画像が生成されない(self, mock_logging, mock_tracer):
+        thread_id = "dummy-thread-id"
+
+        # Setup the list_messages mock to return dummy messages with no image content.
+        dummy_messages = DummyMessages([])
+        self.project_client.agents.list_messages = MagicMock(return_value=dummy_messages)
+
+        # Call the method under test
+        with self.assertRaises(Exception) as e:
+            self.service.save_generated_images(thread_id)
+
+        # Assert that an exception is raised
+        self.assertEqual(str(e.exception), "No generated images found.")
 
 
 if __name__ == "__main__":
