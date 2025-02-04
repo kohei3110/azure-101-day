@@ -27,6 +27,7 @@ class TestCodeInterpreterServiceHandleRunCompletion(unittest.TestCase):
                                                 self.file_repository,
                                                 self.message_repository)
 
+
     @patch("services.code_interpreter_service.tracer")
     def test_handle_run_completion_正常系(self, mock_tracer):
         # Patch tracer to return a dummy context manager
@@ -64,6 +65,13 @@ class TestCodeInterpreterServiceHandleRunCompletion(unittest.TestCase):
         mock_logging.error.assert_called_with("Run failed: Simulated failure")
         # Assert that delete_file is called even in failure case
         self.project_client.agents.delete_file.assert_called_once_with(file_id)
+
+
+    def test_save_generated_images_normal(self):
+        # Call the method with a dummy thread id.
+        result = self.service.save_generated_images("dummy-thread-id")
+        # Assert that the result is the expected file name.
+        self.assertEqual(result, "generated_image.png")
 
 
 if __name__ == "__main__":
