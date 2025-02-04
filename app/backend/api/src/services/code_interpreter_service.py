@@ -124,12 +124,15 @@ class CodeInterpreterService:
             if last_msg:
                 logging.info(f"Last Message: {last_msg.text.value}")
 
+            file_name = None
             for image_content in messages.image_contents:
                 logging.info(f"Image File ID: {image_content.image_file.file_id}")
                 file_name = f"{image_content.image_file.file_id}_image_file.png"
                 self.project_client.agents.save_file(file_id=image_content.image_file.file_id, file_name=file_name)
                 logging.info(f"Saved image file to: {Path.cwd() / file_name}")
 
+            if file_name is None:
+                raise Exception("No generated images found.")
             return file_name
         
     def get_generated_code(self, thread_id: str):

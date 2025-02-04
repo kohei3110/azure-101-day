@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import sys
 import logging
 import unittest
@@ -26,7 +27,7 @@ class TestCodeInterpreterServiceHandleRunCompletion(unittest.TestCase):
         self.service = CodeInterpreterService(self.project_client,
                                                 self.file_repository,
                                                 self.message_repository)
-
+        
 
     @patch("services.code_interpreter_service.tracer")
     def test_handle_run_completion_正常系(self, mock_tracer):
@@ -67,11 +68,20 @@ class TestCodeInterpreterServiceHandleRunCompletion(unittest.TestCase):
         self.project_client.agents.delete_file.assert_called_once_with(file_id)
 
 
-    def test_save_generated_images_normal(self):
-        # Call the method with a dummy thread id.
-        result = self.service.save_generated_images("dummy-thread-id")
-        # Assert that the result is the expected file name.
-        self.assertEqual(result, "generated_image.png")
+    @patch("services.code_interpreter_service.tracer", return_value=DummyTracerSpan())
+    @patch("services.code_interpreter_service.logging")
+    def test_save_generated_images_normal(self, mock_logging, mock_tracer):
+        thread_id = "dummy-thread-id"
+        expected_file_name = "test_id_image_file.png"
+
+        # Call the method under test
+        result = self.service.save_generated_images(thread_id)
+
+        # Assert the expected file name is returned.
+        self.assertEqual(result, expected_file_name)
+        # Confirm that the file was saved to the expected location (logged)
+        saved_path = Path.cwd() / expected_file_name
+        mock_logging.info.assert_any_call(f"Saved image file to: {saved_path}")
 
 
 if __name__ == "__main__":
