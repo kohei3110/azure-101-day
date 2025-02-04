@@ -9,6 +9,21 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 
 from services.code_interpreter_service import CodeInterpreterService
 
+
+class DummyImageFile:
+    def __init__(self, file_id):
+        self.file_id = file_id
+
+class DummyImageContent:
+    def __init__(self, file_id):
+        self.image_file = DummyImageFile(file_id)
+
+class DummyMessages:
+    def __init__(self, image_contents):
+        self.image_contents = image_contents
+    def get_last_text_message_by_role(self, role):
+        return None
+    
 class DummyTracerSpan:
     def __enter__(self):
         return self
@@ -73,6 +88,11 @@ class TestCodeInterpreterServiceHandleRunCompletion(unittest.TestCase):
     def test_save_generated_images_normal(self, mock_logging, mock_tracer):
         thread_id = "dummy-thread-id"
         expected_file_name = "test_id_image_file.png"
+
+        # Setup the list_messages mock to return dummy messages with a valid image content.
+        dummy_messages = DummyMessages([DummyImageContent("test_id")])
+        self.project_client.agents.list_messages = MagicMock(return_value=dummy_messages)
+        self.project_client.agents.save_file = MagicMock()
 
         # Call the method under test
         result = self.service.save_generated_images(thread_id)
