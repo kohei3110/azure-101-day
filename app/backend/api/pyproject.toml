@@ -22,6 +22,7 @@ dependency-injector = "^4.45.0"
 pytest = "^8.3.4"
 httpx = "^0.28.1"
 pytest-cov = "^6.0.0"
+traceloop-sdk = "^0.38.5"
 
 
 [build-system]

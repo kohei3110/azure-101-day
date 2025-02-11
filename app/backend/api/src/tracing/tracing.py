@@ -10,7 +10,10 @@ from opentelemetry.sdk.trace.export import (
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+from traceloop.sdk import Traceloop
 
+
+Traceloop.init()
 
 resource = Resource(attributes={
     SERVICE_NAME: "sample-service"

@@ -46,6 +46,8 @@ on:
         required: true
       SUBSCRIPTION_ID:
         required: true
+      TRACELOOP_API_KEY:
+        required: true
 
 env:
   PORT: 8000
@@ -129,4 +131,4 @@ jobs:
 
     - name: Update environment variables for Azure Container Apps
       run: |
-        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars "PROJECT_CONNECTION_STRING=${{ secrets.PROJECT_CONNECTION_STRING }}" "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" "SIDECAR_SLM_URL=http://localhost:11434/api/generate" "REGION=eastasia" "SUBSCRIPTION_ID=${{ secrets.SUBSCRIPTION_ID }}" "RESOURCE_GROUP=${{ inputs.RESOURCE_GROUP }}" "ACA_DYNAMICSESSIONS_POOL_NAME=pool-azure101day-demo-ce-001"
+        az containerapp update --name ${{ inputs.CONTAINER_APP_NAME }} --resource-group ${{ inputs.RESOURCE_GROUP }} --container-name ${{ env.CONTAINER_NAME_API }} --set-env-vars "PROJECT_CONNECTION_STRING=${{ secrets.PROJECT_CONNECTION_STRING }}" "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" "SIDECAR_SLM_URL=http://localhost:11434/api/generate" "REGION=eastasia" "SUBSCRIPTION_ID=${{ secrets.SUBSCRIPTION_ID }}" "RESOURCE_GROUP=${{ inputs.RESOURCE_GROUP }}" "ACA_DYNAMICSESSIONS_POOL_NAME=pool-azure101day-demo-ce-001" "TRACELOOP_BASE_URL=https://localhost:4318" "TRACELOOP_API_KEY=${{ secrets.TRACELOOP_API_KEY }}""
