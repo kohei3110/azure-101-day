@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from controller import router as api_router
+from .controller import router as api_router
 from tracing.tracing import tracer
 from di.containers import Container
 
