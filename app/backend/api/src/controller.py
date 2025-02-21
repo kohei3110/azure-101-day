@@ -9,6 +9,7 @@ from fastapi import (
     APIRouter, Depends, File, Form, HTTPException, UploadFile
 )
 from fastapi.responses import FileResponse
+from traceloop.sdk.decorators import workflow
 
 from di.containers import Container
 from models.prompt_request import PromptRequest
@@ -65,6 +66,7 @@ async def upload_files(
         
 
 @router.post("/code_interpreter")
+@workflow(name="post_code_interpreter")
 @inject
 async def post_code_interpreter(
     file: UploadFile = File(...),
@@ -74,27 +76,11 @@ async def post_code_interpreter(
     )
 ):
     try:
-        with tracer.start_as_current_span("post_code_interpreter") as parent:
-            parent.set_attributes(
-                {
-                    "span_type": "GenAI",
-                    "inputs": {
-                        "messages": [
-                            {
-                                "content": message
-                            }
-                        ]
-                    },
-                    "gen_ai.operation.name": "chat",
-                    "gen_ai.system": "az.ai.inference",
-                    "gen_ai.request.model": "gpt-4o",
-                }
-            )
-            user_message = message
-            file_name = await code_interpreter_service.process_file_and_message(
-                file, user_message
-            )
-            return FileResponse(path=file_name, filename=file_name)
+        user_message = message
+        file_name = await code_interpreter_service.process_file_and_message(
+            file, user_message
+        )
+        return FileResponse(path=file_name, filename=file_name)
     except Exception as e:
         logging.error(e)
         raise HTTPException(status_code=500, detail="Failed to interpret code")
