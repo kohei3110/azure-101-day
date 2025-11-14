@@ -8,9 +8,26 @@ from controller import router as api_router
 from tracing.tracing import tracer
 from di.containers import Container
 
-logging.basicConfig(
-    level=logging.DEBUG
-)
+# Determine environment (defaults to 'production')
+ENVIRONMENT = os.getenv("ENVIRONMENT", os.getenv("ENV", "production")).lower()
+
+# Configure logging based on environment
+if ENVIRONMENT in ("development", "dev", "local"):
+    # Development mode: Detailed debug logging with more context
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    logging.info(f"Running in {ENVIRONMENT} mode with DEBUG logging enabled")
+else:
+    # Production mode: Only INFO and above
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    logging.info(f"Running in {ENVIRONMENT} mode with INFO logging enabled")
 
 DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 
