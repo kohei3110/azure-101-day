@@ -24,23 +24,27 @@ class CodeInterpreterService:
                     "span_type": "HTTP"
                 }
             )
+            logging.debug(f"Starting process_file_and_message for file: {file.filename}")
             destination: str = os.getenv("DATA_DIR", "/data")
             file_location = await self.file_repository.save_temp_file(file, destination)
+            logging.debug(f"Temporary file saved to: {file_location}")
             try:
                 uploaded_file = self.upload_file_to_project(file_location)
                 agent = self.create_agent(uploaded_file.id)
+                logging.debug(f"Created agent with ID: {agent.id}")
                 thread = self.create_thread()
                 self.send_user_message_to_thread(thread.id, user_message)
                 run = self.execute_run(thread.id, agent.id)
                 self.handle_run_completion(run, thread.id, uploaded_file.id)
                 file_name = self.save_generated_images(thread.id)
+                logging.debug(f"Process completed successfully, generated file: {file_name}")
                 return file_name
             except Exception as e:
-                logging.error(e)
+                logging.error(f"Error in process_file_and_message: {e}")
                 raise Exception(e)
             finally:
                 self.file_repository.delete_file(file_location)
-                print("Deleted file")
+                logging.debug(f"Deleted temporary file: {file_location}")
 
     async def process_message_only(self, file, user_message: str):
         with tracer.start_as_current_span("process_message_only") as span:
@@ -49,11 +53,14 @@ class CodeInterpreterService:
                     "span_type": "HTTP"
                 }
             )
+            logging.debug(f"Starting process_message_only for file: {file.filename}")
             destination: str = os.getenv("DATA_DIR", "/data")
             file_location = await self.file_repository.save_temp_file(file, destination)
+            logging.debug(f"Temporary file saved to: {file_location}")
             try:
                 uploaded_file = self.upload_file_to_project(file_location)
                 agent = self.create_agent(uploaded_file.id)
+                logging.debug(f"Created agent with ID: {agent.id}")
                 thread = self.create_thread()
                 self.send_user_message_to_thread(thread.id, user_message)
                 run = self.execute_run(thread.id, agent.id)
@@ -62,13 +69,15 @@ class CodeInterpreterService:
                 logging.info(f"Messages: {messages}")
                 last_msg = messages.get_last_text_message_by_role("assistant")
                 if last_msg:
+                    logging.debug(f"Retrieved last message from assistant")
                     return last_msg.text.value
             finally:
                 self.file_repository.delete_file(file_location)
-                print("Deleted file")
+                logging.debug(f"Deleted temporary file: {file_location}")
 
     def upload_file_to_project(self, file_location: str):
         with tracer.start_as_current_span("upload_file_to_project"):
+            logging.debug(f"Uploading file to AI project: {file_location}")
             uploaded_file = self.project_client.agents.upload_file_and_poll(
                 file_path=file_location, purpose=FilePurpose.AGENTS
             )
@@ -77,6 +86,7 @@ class CodeInterpreterService:
         
     def create_agent(self, file_id: Optional[str] = None):
         with tracer.start_as_current_span("create_agent"):
+            logging.debug(f"Creating agent with file_id: {file_id}")
             code_interpreter = create_code_interpreter_tool(file_ids=[file_id] if file_id else [])
             agent = self.project_client.agents.create_agent(
                 model="gpt-4o-mini",
@@ -85,6 +95,7 @@ class CodeInterpreterService:
                 tools=code_interpreter.definitions,
                 tool_resources=code_interpreter.resources,
             )
+            logging.debug(f"Agent created with ID: {agent.id}")
             return agent
         
     def create_thread(self):
@@ -95,6 +106,7 @@ class CodeInterpreterService:
 
     def send_user_message_to_thread(self, thread_id: str, user_message: str):
         with tracer.start_as_current_span("send_user_message_to_thread"):
+            logging.debug(f"Sending message to thread {thread_id}: {user_message[:50]}...")  # Log first 50 chars
             message = self.project_client.agents.create_message(
                 thread_id=thread_id,
                 role="user",
@@ -104,12 +116,14 @@ class CodeInterpreterService:
 
     def execute_run(self, thread_id: str, agent_id: str):
         with tracer.start_as_current_span("execute_run"):
+            logging.debug(f"Executing run for thread {thread_id} with agent {agent_id}")
             run = self.project_client.agents.create_and_process_run(thread_id=thread_id, assistant_id=agent_id)
             logging.info(f"Run finished with status: {run.status}")
             return run
 
     def handle_run_completion(self, run, thread_id: str, file_id: str):
         with tracer.start_as_current_span("handle_run_completion"):
+            logging.debug(f"Handling run completion for thread {thread_id}")
             if run.status == "failed":
                 logging.error(f"Run failed: {run.last_error}")
             self.project_client.agents.delete_file(file_id)
@@ -117,6 +131,7 @@ class CodeInterpreterService:
 
     def save_generated_images(self, thread_id: str):
         with tracer.start_as_current_span("save_generated_images"):
+            logging.debug(f"Retrieving generated images for thread {thread_id}")
             messages = self.project_client.agents.list_messages(thread_id=thread_id)
             logging.info(f"Messages: {messages}")
 
@@ -132,7 +147,9 @@ class CodeInterpreterService:
                 logging.info(f"Saved image file to: {Path.cwd() / file_name}")
 
             if file_name is None:
+                logging.error("No generated images found in the thread")
                 raise Exception("No generated images found.")
+            logging.debug(f"Image save completed: {file_name}")
             return file_name
         
     def get_generated_code(self, thread_id: str):

@@ -38,12 +38,14 @@ async def upload_data(
     )
 ):
     """Upload a file to the data directory."""
+    logging.debug(f"Received upload request for file: {file.filename}, content_type: {file.content_type}")
     try:
         with tracer.start_as_current_span("upload_data"):
             filename = file_upload_service.upload_file(file, "data")
+            logging.debug(f"Successfully uploaded file to data directory: {filename}")
             return {"filename": filename}
     except Exception as e:
-        logging.error(e)
+        logging.error(f"Failed to upload file {file.filename}: {e}")
         raise HTTPException(status_code=500, detail="Failed to upload file")
 
 
@@ -56,12 +58,14 @@ async def upload_files(
     )
 ):
     """Upload a file to the data directory."""
+    logging.debug(f"Received upload request for file: {file.filename}, content_type: {file.content_type}")
     try:
         with tracer.start_as_current_span("upload_files"):
             filename = file_upload_service.upload_file(file, "files")
+            logging.debug(f"Successfully uploaded file to files directory: {filename}")
             return {"filename": filename}
     except Exception as e:
-        logging.error(e)
+        logging.error(f"Failed to upload file {file.filename}: {e}")
         raise HTTPException(status_code=500, detail="Failed to upload file")
         
 
@@ -75,14 +79,16 @@ async def post_code_interpreter(
         Provide[Container.code_interpreter_service]
     )
 ):
+    logging.debug(f"Code interpreter request - file: {file.filename}, message: {message}")
     try:
         user_message = message
         file_name = await code_interpreter_service.process_file_and_message(
             file, user_message
         )
+        logging.debug(f"Code interpreter completed successfully, output file: {file_name}")
         return FileResponse(path=file_name, filename=file_name)
     except Exception as e:
-        logging.error(e)
+        logging.error(f"Code interpreter failed - file: {file.filename}, error: {e}")
         raise HTTPException(status_code=500, detail="Failed to interpret code")
 
 
@@ -94,6 +100,7 @@ def post_slm(
         Provide[Container.sidecar_service]
     )
 ):
+    logging.debug(f"SLM request received - prompt: {request_data.prompt}")
     try:
         with tracer.start_as_current_span("post_slm") as parent:
             parent.set_attributes(
@@ -105,9 +112,10 @@ def post_slm(
                 }
             )
             result = sidecar_service.post_slm(request_data.prompt)
+            logging.debug(f"SLM request completed successfully")
             return result
     except Exception as e:
-        logging.error(e)
+        logging.error(f"SLM request failed - prompt: {request_data.prompt}, error: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate text")
     
 
@@ -119,6 +127,7 @@ async def post_dynamic_sessions(
     code_interpreter_service: CodeInterpreterService = Depends(Provide[Container.code_interpreter_service]),
     dynamic_sessions_service: DynamicSessionsService = Depends(Provide[Container.dynamic_sessions_service])
 ):
+    logging.debug(f"Dynamic sessions request - file: {file.filename}, message: {message}")
     try:
         with tracer.start_as_current_span("post_dynamic_sessions") as parent:
             parent.set_attributes(
@@ -131,8 +140,10 @@ async def post_dynamic_sessions(
             )
             user_message = message
         code = await code_interpreter_service.process_message_only(file, user_message)
+        logging.debug(f"Code generated: {code[:100] if code else 'None'}...")  # Log first 100 chars
         session_id = dynamic_sessions_service.process_dynamic_session(file, code)
+        logging.debug(f"Dynamic session created successfully with session_id: {session_id}")
         return {"session_id": session_id}
     except Exception as e:
-        logging.error(e)
+        logging.error(f"Dynamic session failed - file: {file.filename}, error: {e}")
         raise HTTPException(status_code=500, detail="Failed to process dynamic session")
